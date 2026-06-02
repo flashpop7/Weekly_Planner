@@ -1,0 +1,650 @@
+:root {
+  --bg: #f6f7f4;
+  --paper: #ffffff;
+  --ink: #202327;
+  --muted: #6d7380;
+  --line: #dfe4e1;
+  --soft: #edf4f1;
+  --accent: #287c66;
+  --accent-dark: #1e5e4e;
+  --warm: #f4b942;
+  --danger: #bf4b4b;
+  --shadow: 0 18px 40px rgba(31, 43, 39, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", Arial, sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app-shell {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 42px;
+}
+
+.daily-quote {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 58px;
+  margin-bottom: 14px;
+  padding: 14px 18px;
+  border: 1px solid rgba(40, 124, 102, 0.2);
+  background: #fffdf7;
+  box-shadow: var(--shadow);
+}
+
+.daily-quote p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.quote-mark {
+  color: var(--warm);
+  font-size: 36px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.planner-band,
+.summary-band {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.planner-band {
+  padding: 24px;
+}
+
+.summary-band {
+  margin-top: 20px;
+  padding: 22px 24px 24px;
+}
+
+.planner-head,
+.summary-head,
+.dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  letter-spacing: 0;
+}
+
+h1 {
+  font-size: clamp(28px, 4vw, 40px);
+}
+
+h2 {
+  font-size: 24px;
+}
+
+h3 {
+  font-size: 20px;
+}
+
+.week-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-button,
+.today-button,
+.clear-button,
+.save-button,
+.delete-button {
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 40px;
+  border-radius: 8px;
+}
+
+.icon-button {
+  width: 42px;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.today-button,
+.clear-button,
+.save-button,
+.delete-button {
+  padding: 0 14px;
+  font-weight: 700;
+}
+
+.save-button {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.clear-button {
+  color: var(--accent-dark);
+}
+
+.delete-button {
+  color: var(--danger);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.date-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 18px 0;
+  color: var(--muted);
+}
+
+.date-line strong {
+  color: var(--ink);
+}
+
+.schedule-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+}
+
+.schedule-grid {
+  display: grid;
+  grid-template-columns: 96px repeat(7, minmax(128px, 1fr));
+  grid-auto-rows: minmax(76px, auto);
+  min-width: 980px;
+}
+
+.grid-cell {
+  min-height: 76px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+}
+
+.corner-cell,
+.day-cell,
+.time-cell {
+  background: var(--soft);
+  font-weight: 700;
+}
+
+.corner-cell,
+.time-cell {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+
+.day-cell {
+  padding: 12px;
+}
+
+.day-cell .weekday {
+  display: block;
+  color: var(--ink);
+  font-size: 16px;
+}
+
+.day-cell .date {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.plan-cell {
+  position: relative;
+  padding: 8px;
+}
+
+.plan-button {
+  width: 100%;
+  height: 100%;
+  min-height: 60px;
+  border: 1px dashed transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  text-align: left;
+  padding: 9px;
+  overflow: hidden;
+}
+
+.plan-button:hover,
+.plan-button:focus-visible {
+  border-color: var(--accent);
+  background: #f7fbf9;
+  outline: none;
+}
+
+.plan-button.has-plan {
+  border-style: solid;
+  border-color: rgba(40, 124, 102, 0.28);
+  background: #eaf6f1;
+  color: var(--ink);
+  border-left: 6px solid var(--category-color, var(--accent));
+}
+
+.plan-button.is-done {
+  background: #f0f1ed;
+  color: #7b8078;
+  text-decoration: line-through;
+}
+
+.plan-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.35;
+}
+
+.plan-meta {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.summary-table-wrap {
+  position: relative;
+  overflow-x: auto;
+  margin-top: 16px;
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+.summary-table th,
+.summary-table td {
+  border-bottom: 1px solid var(--line);
+  padding: 12px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.summary-table th {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.summary-table td:first-child,
+.summary-table th:first-child {
+  width: 66px;
+  text-align: center;
+}
+
+.summary-table input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+}
+
+.done-row {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.empty-state {
+  margin: 18px 0 2px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.plan-dialog,
+.wide-dialog,
+.mood-dialog {
+  width: min(520px, calc(100% - 28px));
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0;
+  box-shadow: var(--shadow);
+}
+
+.wide-dialog {
+  width: min(760px, calc(100% - 28px));
+}
+
+.plan-dialog::backdrop,
+.wide-dialog::backdrop,
+.mood-dialog::backdrop {
+  background: rgba(20, 25, 27, 0.38);
+}
+
+.plan-dialog form,
+.wide-dialog form,
+.mood-dialog form {
+  padding: 22px;
+}
+
+.plan-field {
+  display: grid;
+  gap: 8px;
+  margin: 20px 0;
+  font-weight: 700;
+}
+
+.plan-field input,
+.plan-field textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--ink);
+}
+
+.plan-field textarea {
+  resize: vertical;
+}
+
+.plan-field select {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 12px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.plan-field select:focus,
+.plan-field input:focus,
+.plan-field textarea:focus {
+  outline: 2px solid rgba(40, 124, 102, 0.25);
+  border-color: var(--accent);
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cheer-stack {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 20;
+  display: grid;
+  gap: 10px;
+  width: min(320px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+.cheer-card {
+  padding: 13px 15px;
+  border: 1px solid rgba(40, 124, 102, 0.22);
+  border-left: 5px solid var(--warm);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--ink);
+  box-shadow: 0 16px 32px rgba(31, 43, 39, 0.16);
+  font-weight: 800;
+  line-height: 1.35;
+  animation: cheerIn 280ms ease-out, cheerOut 360ms ease-in 2.6s forwards;
+}
+
+.dialog-note {
+  margin: 16px 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.task-list {
+  display: grid;
+  gap: 10px;
+  max-height: min(58vh, 520px);
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.task-item {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-left: 6px solid var(--category-color, var(--accent));
+  border-radius: 8px;
+  background: #fff;
+}
+
+.task-item strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.task-item small {
+  color: var(--muted);
+}
+
+.reschedule-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) 1fr 1fr;
+  gap: 8px;
+}
+
+.reschedule-row label {
+  display: grid;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.reschedule-row input,
+.reschedule-row select {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 10px;
+  color: var(--ink);
+}
+
+.mood-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.mood-button {
+  min-height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.mood-button:hover,
+.mood-button:focus-visible {
+  border-color: var(--accent);
+  background: #f7fbf9;
+  outline: none;
+}
+
+.weekly-chart {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0 18px;
+}
+
+.chart-row {
+  display: grid;
+  grid-template-columns: 92px 1fr 60px;
+  gap: 10px;
+  align-items: center;
+}
+
+.chart-label {
+  font-weight: 800;
+}
+
+.chart-track {
+  height: 16px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--soft);
+}
+
+.chart-bar {
+  height: 100%;
+  width: var(--bar-width);
+  border-radius: inherit;
+  background: var(--category-color, var(--accent));
+}
+
+.weekly-table-wrap {
+  overflow-x: auto;
+}
+
+.confetti {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -24px;
+  width: 10px;
+  height: 18px;
+  border-radius: 3px;
+  background: var(--piece-color);
+  animation: confettiFall 2.8s linear forwards;
+}
+
+@keyframes confettiFall {
+  to {
+    transform: translateY(110vh) rotate(540deg);
+    opacity: 0.2;
+  }
+}
+
+@keyframes cheerIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) translateX(18px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) translateX(0) scale(1);
+  }
+}
+
+@keyframes cheerOut {
+  to {
+    opacity: 0;
+    transform: translateY(-8px) translateX(22px) scale(0.98);
+  }
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    width: min(100% - 18px, 1180px);
+    padding-top: 12px;
+  }
+
+  .planner-band,
+  .summary-band {
+    padding: 16px;
+  }
+
+  .daily-quote {
+    align-items: flex-start;
+    padding: 13px 14px;
+  }
+
+  .daily-quote p {
+    font-size: 15px;
+  }
+
+  .planner-head,
+  .summary-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .week-tools {
+    width: 100%;
+  }
+
+  .today-button {
+    flex: 1;
+  }
+
+  .reschedule-row {
+    grid-template-columns: 1fr;
+  }
+
+  .mood-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-row {
+    grid-template-columns: 76px 1fr 48px;
+  }
+
+  .cheer-stack {
+    top: 12px;
+    right: 9px;
+    width: min(300px, calc(100vw - 18px));
+  }
+}
