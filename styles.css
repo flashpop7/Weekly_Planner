@@ -35,6 +35,11 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .app-shell {
   width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
@@ -624,10 +629,17 @@ h3 {
 
   .week-tools {
     width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .icon-button {
+    width: 100%;
   }
 
   .today-button {
-    flex: 1;
+    grid-column: 2;
+    min-width: 0;
   }
 
   .reschedule-row {

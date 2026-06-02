@@ -99,6 +99,7 @@ let activeSlot = "";
 let activeSlotIndex = 0;
 let pendingCarryovers = [];
 let pendingMoodKey = "";
+let pendingMoodPlanId = "";
 const historyLimit = 40;
 const undoStack = [];
 const redoStack = [];
@@ -452,10 +453,10 @@ function renderSummary() {
       </td>
     `;
     row.querySelector("input").addEventListener("change", (event) => {
+      const before = clonePlans();
       const wasDone = plans[entry.key].done;
       plans[entry.key].done = event.target.checked;
-      savePlans();
-      render();
+      commitPlanChange(before);
       if (!wasDone && event.target.checked) {
         showCheer();
         openMoodDialog(entry.key);
@@ -489,6 +490,7 @@ function showCheer(message = "") {
 
 function openMoodDialog(key) {
   pendingMoodKey = key;
+  pendingMoodPlanId = plans[key]?.id || "";
   moodGrid.innerHTML = "";
   moods.forEach((mood) => {
     const button = document.createElement("button");
@@ -611,6 +613,7 @@ function renderSpanSelect(select, startIndex, selectedSpan = 1) {
 
 function saveCarryoverReschedules() {
   const items = Array.from(rescheduleList.querySelectorAll(".task-item"));
+  const before = clonePlans();
 
   items.forEach((item) => {
     const oldKey = item.dataset.oldKey;
@@ -638,19 +641,20 @@ function saveCarryoverReschedules() {
   });
 
   localStorage.setItem(carryoverSeenKey, getCarryoverSignature());
-  savePlans();
-  render();
-  showCheer("已把昨日剩余任务安放到新时间里。今天慢慢来，也认真来。");
+  if (commitPlanChange(before)) {
+    showCheer("已把昨日剩余任务安放到新时间里，可以用撤销回退。");
+  }
 }
 
 function discardCarryovers() {
+  const before = clonePlans();
   pendingCarryovers.forEach((entry) => {
     delete plans[entry.key];
   });
   localStorage.setItem(carryoverSeenKey, getCarryoverSignature());
-  savePlans();
-  render();
-  showCheer("昨日剩余未完成任务已删除。轻装上阵，也是一种整理。");
+  if (commitPlanChange(before)) {
+    showCheer("昨日剩余未完成任务已删除，可以用撤销找回。");
+  }
 }
 
 function checkWeeklySummary() {
@@ -774,13 +778,15 @@ todayBtn.addEventListener("click", () => {
 });
 
 document.querySelector("#clearDone").addEventListener("click", () => {
+  const before = clonePlans();
   Object.keys(plans).forEach((key) => {
     if (plans[key].done) {
       delete plans[key];
     }
   });
-  savePlans();
-  render();
+  if (commitPlanChange(before)) {
+    showCheer("已清除完成项，可以用撤销找回来。");
+  }
 });
 
 planDialog.addEventListener("close", () => {
@@ -789,6 +795,7 @@ planDialog.addEventListener("close", () => {
   const span = Number(endTime.value) || 1;
   const category = planCategory.value || "study";
   const dueDate = repeatUntil.value || activeDateKey;
+  const before = clonePlans();
 
   if (action === "save" && text) {
     if (plans[activeKey]) {
@@ -809,8 +816,7 @@ planDialog.addEventListener("close", () => {
   activeDateKey = "";
   activeSlot = "";
   activeSlotIndex = 0;
-  savePlans();
-  render();
+  commitPlanChange(before);
 });
 
 carryoverDialog.addEventListener("close", () => {
@@ -830,13 +836,17 @@ rescheduleDialog.addEventListener("close", () => {
 });
 
 moodDialog.addEventListener("close", () => {
-  if (pendingMoodKey && moodDialog.returnValue && plans[pendingMoodKey]) {
+  if (pendingMoodKey && moodDialog.returnValue && plans[pendingMoodKey]?.id === pendingMoodPlanId) {
+    const before = clonePlans();
     plans[pendingMoodKey].mood = moodDialog.returnValue;
-    savePlans();
-    render();
+    commitPlanChange(before);
   }
   pendingMoodKey = "";
+  pendingMoodPlanId = "";
 });
+
+undoBtn.addEventListener("click", undoLastChange);
+redoBtn.addEventListener("click", redoLastChange);
 
 updateBtn.addEventListener("click", () => {
   updateMessage.textContent = `当前应用版本：v${appVersion}。网页版则直接点网页更新按钮，App 版则需下载新版本。`;
@@ -922,6 +932,7 @@ async function downloadLatestApk() {
 renderCategoryOptions();
 render();
 savePlans();
+updateHistoryButtons();
 showPendingUpdateMessage();
 window.setTimeout(() => {
   checkCarryovers();
