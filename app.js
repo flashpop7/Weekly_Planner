@@ -6,6 +6,7 @@ const slots = Array.from({ length: 17 }, (_, index) => {
 });
 
 const storageKey = "simple-week-planner";
+const historyStorageKey = "simple-week-planner-history";
 const appVersion = "1.4.0";
 const webAppUrl = "https://flashpop7.github.io/planning/";
 const versionInfoUrl = "version.json";
@@ -90,6 +91,9 @@ const updateDialog = document.querySelector("#updateDialog");
 const updateMessage = document.querySelector("#updateMessage");
 const undoBtn = document.querySelector("#undoBtn");
 const redoBtn = document.querySelector("#redoBtn");
+const clearWeekBtn = document.querySelector("#clearWeek");
+const clearWeekDialog = document.querySelector("#clearWeekDialog");
+const clearWeekMessage = document.querySelector("#clearWeekMessage");
 
 let plans = normalizePlans(JSON.parse(localStorage.getItem(storageKey) || "{}"));
 let weekStart = getMonday(new Date());
@@ -97,12 +101,14 @@ let activeKey = "";
 let activeDateKey = "";
 let activeSlot = "";
 let activeSlotIndex = 0;
+let activePlansBefore = null;
 let pendingCarryovers = [];
 let pendingMoodKey = "";
 let pendingMoodPlanId = "";
 const historyLimit = 40;
-const undoStack = [];
-const redoStack = [];
+const savedHistory = loadHistory();
+const undoStack = savedHistory.undoStack;
+const redoStack = savedHistory.redoStack;
 
 function pad(value) {
   return String(value).padStart(2, "0");
@@ -142,6 +148,15 @@ function getWeekDates() {
   return Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
 }
 
+function getVisibleWeekKeys() {
+  return getWeekDates().map(toDateKey);
+}
+
+function getVisibleWeekLabel() {
+  const dates = getWeekDates();
+  return `${formatDate(dates[0])} - ${formatDate(dates[6])}`;
+}
+
 function getCategory(value) {
   return categories[value] || categories.study;
 }
@@ -173,6 +188,28 @@ function savePlans() {
   localStorage.setItem(storageKey, JSON.stringify(plans));
 }
 
+function loadHistory() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(historyStorageKey) || "{}");
+    return {
+      undoStack: Array.isArray(saved.undoStack) ? saved.undoStack : [],
+      redoStack: Array.isArray(saved.redoStack) ? saved.redoStack : [],
+    };
+  } catch (error) {
+    return { undoStack: [], redoStack: [] };
+  }
+}
+
+function saveHistory() {
+  localStorage.setItem(
+    historyStorageKey,
+    JSON.stringify({
+      undoStack: undoStack.slice(-historyLimit),
+      redoStack: redoStack.slice(-historyLimit),
+    }),
+  );
+}
+
 function clonePlans(source = plans) {
   return JSON.parse(JSON.stringify(source));
 }
@@ -184,6 +221,7 @@ function plansChanged(before, after = plans) {
 function updateHistoryButtons() {
   undoBtn.disabled = undoStack.length === 0;
   redoBtn.disabled = redoStack.length === 0;
+  saveHistory();
 }
 
 function commitPlanChange(before) {
@@ -205,6 +243,9 @@ function commitPlanChange(before) {
 
 function restorePlans(snapshot, targetStack, message) {
   targetStack.push(clonePlans(plans));
+  if (targetStack.length > historyLimit) {
+    targetStack.shift();
+  }
   plans = normalizePlans(clonePlans(snapshot));
   savePlans();
   render();
@@ -226,6 +267,24 @@ function redoLastChange() {
     return;
   }
   restorePlans(snapshot, undoStack, "已恢复刚才撤销的修改。");
+}
+
+function clearVisibleWeekPlans() {
+  const weekKeys = new Set(getVisibleWeekKeys());
+  const before = clonePlans();
+
+  Object.keys(plans).forEach((key) => {
+    const [dateKey] = key.split("|");
+    if (weekKeys.has(dateKey)) {
+      delete plans[key];
+    }
+  });
+
+  if (commitPlanChange(before)) {
+    showCheer("已清空当前显示周的计划，可以用撤销找回。");
+  } else {
+    showCheer("当前显示周没有可清空的计划。");
+  }
 }
 
 function makeKey(dateKey, slot) {
@@ -391,6 +450,7 @@ function openPlanDialog(event) {
   const button = event.currentTarget;
   const clickedSlotIndex = Number(button.dataset.slotIndex);
   const coveredPlan = getPlanAt(button.dataset.date, clickedSlotIndex);
+  activePlansBefore = clonePlans();
 
   activeKey = coveredPlan?.key || button.dataset.key;
   activeDateKey = button.dataset.date;
@@ -406,6 +466,7 @@ function openPlanDialog(event) {
   planCategory.value = plan?.category || "study";
   deletePlan.hidden = !plan;
   renderEndTimeOptions(plan?.span || 1);
+  planDialog.returnValue = "";
   planDialog.showModal();
   planText.focus();
 }
@@ -789,13 +850,25 @@ document.querySelector("#clearDone").addEventListener("click", () => {
   }
 });
 
+clearWeekBtn.addEventListener("click", () => {
+  clearWeekMessage.textContent = `确定要清空 ${getVisibleWeekLabel()} 的全部计划吗？这个操作可以用“撤销”恢复。`;
+  clearWeekDialog.returnValue = "";
+  clearWeekDialog.showModal();
+});
+
+clearWeekDialog.addEventListener("close", () => {
+  if (clearWeekDialog.returnValue === "confirm") {
+    clearVisibleWeekPlans();
+  }
+});
+
 planDialog.addEventListener("close", () => {
   const action = planDialog.returnValue;
   const text = planText.value.trim();
   const span = Number(endTime.value) || 1;
   const category = planCategory.value || "study";
   const dueDate = repeatUntil.value || activeDateKey;
-  const before = clonePlans();
+  const before = activePlansBefore || clonePlans();
 
   if (action === "save" && text) {
     if (plans[activeKey]) {
@@ -816,6 +889,7 @@ planDialog.addEventListener("close", () => {
   activeDateKey = "";
   activeSlot = "";
   activeSlotIndex = 0;
+  activePlansBefore = null;
   commitPlanChange(before);
 });
 

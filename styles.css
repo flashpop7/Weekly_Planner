@@ -132,6 +132,13 @@ h3 {
   gap: 8px;
 }
 
+.summary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .icon-button,
 .today-button,
 .clear-button,
@@ -625,6 +632,14 @@ h3 {
   .summary-head {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .summary-actions {
+    width: 100%;
+  }
+
+  .summary-actions .clear-button {
+    flex: 1 1 136px;
   }
 
   .week-tools {
