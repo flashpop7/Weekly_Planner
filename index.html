@@ -8,7 +8,7 @@
   </head>
   <body>
     <main class="app-shell">
-      <section class="daily-quote" aria-label="每日鼓励">
+      <section class="daily-quote" aria-label="每日鼓励" data-i18n-aria="dailyEncouragement">
         <span class="quote-mark" aria-hidden="true">“</span>
         <p id="dailyQuote"></p>
       </section>
@@ -17,17 +17,19 @@
         <div class="planner-head">
           <div>
             <p class="eyebrow">Weekly Planner</p>
-            <h1>计划安排表</h1>
+            <h1 data-i18n="appTitle">计划安排表</h1>
           </div>
-          <div class="week-tools" aria-label="周切换">
-            <button class="clear-button" id="updateBtn" type="button">更新</button>
-            <button class="clear-button" id="undoBtn" type="button" disabled>撤销</button>
-            <button class="clear-button" id="redoBtn" type="button" disabled>恢复</button>
-            <button class="icon-button" id="prevWeek" type="button" title="上一周" aria-label="上一周">
+          <div class="week-tools" aria-label="周切换" data-i18n-aria="navigationTools">
+            <button class="clear-button" id="updateBtn" type="button" data-i18n="update">更新</button>
+            <button class="clear-button" id="feedbackBtn" type="button" data-i18n="feedback">反馈</button>
+            <button class="clear-button" id="langToggle" type="button">EN</button>
+            <button class="clear-button" id="undoBtn" type="button" disabled data-i18n="undo">撤销</button>
+            <button class="clear-button" id="redoBtn" type="button" disabled data-i18n="redo">恢复</button>
+            <button class="icon-button" id="prevWeek" type="button" title="上一周" aria-label="上一周" data-i18n-title="prevWeek" data-i18n-aria="prevWeek">
               <span aria-hidden="true">‹</span>
             </button>
             <button class="today-button" id="todayBtn" type="button">今天</button>
-            <button class="icon-button" id="nextWeek" type="button" title="下一周" aria-label="下一周">
+            <button class="icon-button" id="nextWeek" type="button" title="下一周" aria-label="下一周" data-i18n-title="nextWeek" data-i18n-aria="nextWeek">
               <span aria-hidden="true">›</span>
             </button>
           </div>
@@ -38,12 +40,12 @@
           <span id="weekRange"></span>
         </div>
 
-        <div class="view-switch" aria-label="界面显示方式">
-          <button class="view-button" id="dayViewBtn" type="button" aria-pressed="true">一天</button>
-          <button class="view-button" id="weekViewBtn" type="button" aria-pressed="false">一周</button>
+        <div class="view-switch" aria-label="界面显示方式" data-i18n-aria="viewMode">
+          <button class="view-button" id="dayViewBtn" type="button" aria-pressed="true" data-i18n="dayView">一天</button>
+          <button class="view-button" id="weekViewBtn" type="button" aria-pressed="false" data-i18n="weekView">一周</button>
         </div>
 
-        <div class="schedule-wrap" aria-label="课程表式计划安排">
+        <div class="schedule-wrap" aria-label="课程表式计划安排" data-i18n-aria="schedule">
           <div class="schedule-grid" id="scheduleGrid"></div>
         </div>
       </section>
@@ -52,11 +54,11 @@
         <div class="summary-head">
           <div>
             <p class="eyebrow">Summary</p>
-            <h2>计划总结表</h2>
+            <h2 data-i18n="summaryTitle">计划总结表</h2>
           </div>
           <div class="summary-actions">
-            <button class="clear-button" id="clearWeek" type="button">清空本周计划</button>
-            <button class="clear-button" id="clearDone" type="button">清除已完成</button>
+            <button class="clear-button" id="clearWeek" type="button" data-i18n="clearWeek">清空本周计划</button>
+            <button class="clear-button" id="clearDone" type="button" data-i18n="clearDone">清除已完成</button>
           </div>
         </div>
 
@@ -64,11 +66,11 @@
           <table class="summary-table">
             <thead>
               <tr>
-                <th scope="col">完成</th>
-                <th scope="col">日期</th>
-                <th scope="col">星期</th>
-                <th scope="col">时间</th>
-                <th scope="col">计划内容</th>
+                <th scope="col" data-i18n="done">完成</th>
+                <th scope="col" data-i18n="date">日期</th>
+                <th scope="col" data-i18n="weekday">星期</th>
+                <th scope="col" data-i18n="time">时间</th>
+                <th scope="col" data-i18n="planContent">计划内容</th>
               </tr>
             </thead>
             <tbody id="summaryBody"></tbody>
@@ -85,31 +87,31 @@
             <p class="eyebrow" id="dialogDate"></p>
             <h3 id="dialogTime"></h3>
           </div>
-          <button class="icon-button" value="cancel" type="submit" aria-label="关闭">×</button>
+          <button class="icon-button" value="cancel" type="submit" aria-label="关闭" data-i18n-aria="close">×</button>
         </div>
 
         <label class="plan-field">
-          <span>结束时间</span>
+          <span data-i18n="endTime">结束时间</span>
           <select id="endTime"></select>
         </label>
 
         <label class="plan-field">
-          <span>持续到</span>
+          <span data-i18n="repeatUntil">持续到</span>
           <input id="repeatUntil" type="date" />
         </label>
 
         <label class="plan-field">
-          <span>任务属性</span>
+          <span data-i18n="category">任务属性</span>
           <select id="planCategory"></select>
         </label>
 
         <label class="plan-field">
-          <span>计划内容</span>
-          <textarea id="planText" rows="4" placeholder="例如：复习数学、完成项目、健身训练"></textarea>
+          <span data-i18n="planContent">计划内容</span>
+          <textarea id="planText" rows="4" placeholder="例如：复习数学、完成项目、健身训练" data-i18n-placeholder="planPlaceholder"></textarea>
         </label>
         <div class="dialog-actions">
-          <button class="delete-button" id="deletePlan" value="delete" type="submit">删除</button>
-          <button class="save-button" id="savePlan" value="save" type="submit">保存计划</button>
+          <button class="delete-button" id="deletePlan" value="delete" type="submit" data-i18n="delete">删除</button>
+          <button class="save-button" id="savePlan" value="save" type="submit" data-i18n="savePlan">保存计划</button>
         </div>
       </form>
     </dialog>
@@ -119,14 +121,14 @@
         <div class="dialog-head">
           <div>
             <p class="eyebrow">Reminder</p>
-            <h3>昨日剩余未完成任务</h3>
+            <h3 data-i18n="carryoverTitle">昨日剩余未完成任务</h3>
           </div>
         </div>
-        <p class="dialog-note">是否加入到今日任务中？如果选择否，这些昨日剩余未完成任务会被删除。</p>
+        <p class="dialog-note" data-i18n="carryoverNote">是否加入到今日任务中？如果选择否，这些昨日剩余未完成任务会被删除。</p>
         <div class="task-list" id="carryoverList"></div>
         <div class="dialog-actions">
-          <button class="delete-button" id="discardCarryover" value="discard" type="submit">否，删除</button>
-          <button class="save-button" id="acceptCarryover" value="accept" type="submit">是，加入今日</button>
+          <button class="delete-button" id="discardCarryover" value="discard" type="submit" data-i18n="noDelete">否，删除</button>
+          <button class="save-button" id="acceptCarryover" value="accept" type="submit" data-i18n="yesAddToday">是，加入今日</button>
         </div>
       </form>
     </dialog>
@@ -136,13 +138,13 @@
         <div class="dialog-head">
           <div>
             <p class="eyebrow">Reschedule</p>
-            <h3>调整剩余任务时间段</h3>
+            <h3 data-i18n="rescheduleTitle">调整剩余任务时间段</h3>
           </div>
         </div>
-        <p class="dialog-note">给每个剩余任务安排新的日期和时间段，默认会放到今天同一时间。</p>
+        <p class="dialog-note" data-i18n="rescheduleNote">给每个剩余任务安排新的日期和时间段，默认会放到今天同一时间。</p>
         <div class="task-list" id="rescheduleList"></div>
         <div class="dialog-actions">
-          <button class="save-button" id="saveCarryover" value="save" type="submit">保存调整</button>
+          <button class="save-button" id="saveCarryover" value="save" type="submit" data-i18n="saveAdjustment">保存调整</button>
         </div>
       </form>
     </dialog>
@@ -152,7 +154,7 @@
         <div class="dialog-head">
           <div>
             <p class="eyebrow">Mood</p>
-            <h3>完成后的心情</h3>
+            <h3 data-i18n="moodTitle">完成后的心情</h3>
           </div>
         </div>
         <div class="mood-grid" id="moodGrid"></div>
@@ -166,7 +168,7 @@
             <p class="eyebrow">Weekly Review</p>
             <h3 id="weeklyTitle">周总结表</h3>
           </div>
-          <button class="icon-button" value="close" type="submit" aria-label="关闭">×</button>
+          <button class="icon-button" value="close" type="submit" aria-label="关闭" data-i18n-aria="close">×</button>
         </div>
         <p class="dialog-note" id="weeklyMessage"></p>
         <div class="weekly-chart" id="weeklyChart"></div>
@@ -174,10 +176,10 @@
           <table class="summary-table">
             <thead>
               <tr>
-                <th scope="col">任务</th>
-                <th scope="col">属性</th>
-                <th scope="col">时长</th>
-                <th scope="col">心情</th>
+                <th scope="col" data-i18n="task">任务</th>
+                <th scope="col" data-i18n="categoryShort">属性</th>
+                <th scope="col" data-i18n="duration">时长</th>
+                <th scope="col" data-i18n="mood">心情</th>
               </tr>
             </thead>
             <tbody id="weeklyBody"></tbody>
@@ -191,14 +193,14 @@
         <div class="dialog-head">
           <div>
             <p class="eyebrow">Update</p>
-            <h3>应用更新</h3>
+            <h3 data-i18n="updateTitle">应用更新</h3>
           </div>
-          <button class="icon-button" value="close" type="submit" aria-label="关闭">×</button>
+          <button class="icon-button" value="close" type="submit" aria-label="关闭" data-i18n-aria="close">×</button>
         </div>
         <p class="dialog-note" id="updateMessage"></p>
         <div class="dialog-actions">
-          <button class="clear-button" value="download" id="downloadApk" type="submit">下载新版</button>
-          <button class="save-button" value="reload" id="reloadApp" type="submit">网页更新</button>
+          <button class="clear-button" value="download" id="downloadApk" type="submit" data-i18n="downloadNew">下载新版</button>
+          <button class="save-button" value="reload" id="reloadApp" type="submit" data-i18n="webUpdate">网页更新</button>
         </div>
       </form>
     </dialog>
@@ -208,14 +210,51 @@
         <div class="dialog-head">
           <div>
             <p class="eyebrow">Confirm</p>
-            <h3>清空本周计划</h3>
+            <h3 data-i18n="clearWeek">清空本周计划</h3>
           </div>
-          <button class="icon-button" value="cancel" type="submit" aria-label="关闭">×</button>
+          <button class="icon-button" value="cancel" type="submit" aria-label="关闭" data-i18n-aria="close">×</button>
         </div>
         <p class="dialog-note" id="clearWeekMessage"></p>
         <div class="dialog-actions">
-          <button class="clear-button" value="cancel" type="submit">取消</button>
-          <button class="delete-button" value="confirm" type="submit">确认清空</button>
+          <button class="clear-button" value="cancel" type="submit" data-i18n="cancel">取消</button>
+          <button class="delete-button" value="confirm" type="submit" data-i18n="confirmClear">确认清空</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="wide-dialog" id="feedbackDialog">
+      <form method="dialog">
+        <div class="dialog-head">
+          <div>
+            <p class="eyebrow">Feedback</p>
+            <h3 data-i18n="feedbackTitle">建议反馈</h3>
+          </div>
+          <button class="icon-button" value="cancel" type="submit" aria-label="关闭" data-i18n-aria="close">×</button>
+        </div>
+
+        <label class="plan-field">
+          <span data-i18n="feedbackType">反馈类型</span>
+          <select id="feedbackType">
+            <option value="feature" data-i18n="feedbackFeature">功能建议</option>
+            <option value="bug" data-i18n="feedbackBug">网站问题</option>
+            <option value="experience" data-i18n="feedbackExperience">使用体验</option>
+            <option value="other" data-i18n="feedbackOther">其他</option>
+          </select>
+        </label>
+
+        <label class="plan-field">
+          <span data-i18n="feedbackContent">反馈内容</span>
+          <textarea id="feedbackText" rows="5" maxlength="1200" placeholder="写下你遇到的问题，或者希望增加的功能" data-i18n-placeholder="feedbackPlaceholder"></textarea>
+        </label>
+
+        <label class="plan-field">
+          <span data-i18n="contactOptional">联系方式（可选）</span>
+          <input id="feedbackContact" type="text" maxlength="120" placeholder="微信、邮箱或其他联系方式" data-i18n-placeholder="contactPlaceholder" />
+        </label>
+
+        <div class="dialog-actions">
+          <button class="clear-button" value="cancel" type="submit" data-i18n="cancel">取消</button>
+          <button class="save-button" id="sendFeedback" value="send" type="submit" data-i18n="submitFeedback">提交反馈</button>
         </div>
       </form>
     </dialog>

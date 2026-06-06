@@ -105,6 +105,21 @@ The `version.json` file currently tracks the web version and keeps a placeholder
 
 When an APK is created in the future, a new APK file can be uploaded to a release or another stable hosting location. At that point, replace the empty `apkUrl` value with the APK download URL.
 
+## Feedback Collection
+
+The app includes a feedback entry for feature suggestions and bug reports.
+
+Because this is a static GitHub Pages app, private feedback collection needs an external form or submission endpoint. Configure one of these values in `app.js`:
+
+- `feedbackFormUrl`: opens a private form service page, such as a questionnaire or form whose responses only the creator can view.
+- `feedbackSubmitUrl`: submits the built-in feedback dialog to a form/backend endpoint that accepts JSON.
+
+Do not put private API keys or creator-only tokens in the frontend code.
+
+## Language Switch
+
+The app supports Chinese and English UI text. The selected language is saved in browser `localStorage`, so returning users keep their preferred language on the same device/browser.
+
 ## Current Status
 
 - Web version: available through GitHub Pages

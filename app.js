@@ -8,56 +8,302 @@ const slots = Array.from({ length: 17 }, (_, index) => {
 const storageKey = "simple-week-planner";
 const historyStorageKey = "simple-week-planner-history";
 const viewModeStorageKey = "simple-week-planner-view-mode";
+const languageStorageKey = "simple-week-planner-language";
 const appVersion = "1.4.0";
 const webAppUrl = "https://flashpop7.github.io/planning/";
 const versionInfoUrl = "version.json";
+const feedbackFormUrl = "";
+const feedbackSubmitUrl = "";
 const weeklySeenKey = "simple-week-planner-weekly-seen";
 const carryoverSeenKey = "simple-week-planner-carryover-seen";
-const dailyQuotes = [
-  "今天也不用一步登天，先把眼前这一小步走稳。",
-  "计划不是束缚，是帮你把心里的光落到地上。",
-  "慢慢来，但别停下。你正在把混乱整理成答案。",
-  "把大目标切成小任务，每完成一格，未来就亮一点。",
-  "今天的你只需要比昨天多前进一点点，就已经很好。",
-  "不用等状态完美才开始，开始本身就会制造状态。",
-  "你写下的每个计划，都在替明天的自己省一点力气。",
-  "认真生活的人，连普通的一天也能变得有方向。",
-  "先完成，再完美。先行动，再修正。",
-  "当你愿意安排时间，时间也会慢慢站到你这边。",
-  "别小看今天的一格，它可能是未来很大变化的起点。",
-  "清醒地安排，温柔地执行，坚定地完成。",
-  "任务会变少，能力会变多，你正在升级。",
-  "今天的努力不一定马上发光，但它一定在蓄电。",
-  "把焦虑放进表格，把行动放进时间。",
-];
-const cheerMessages = [
-  "你真棒！这格被你拿下了。",
-  "完成！今日能量条偷偷涨了一截。",
-  "干得漂亮，计划表已经开始佩服你了。",
-  "叮！一枚任务被你优雅解决。",
-  "很好，这一下很有执行力的味道。",
-  "恭喜，拖延症刚刚被你轻轻击退。",
-  "这不是打勾，这是给未来的自己递奶茶。",
-  "冷知识：完成任务会让人看起来更像主角。",
-  "漂亮！这一勾，有点像人生在点头。",
-  "任务已收工，脑内小烟花可以放一秒。",
-];
+const translations = {
+  zh: {
+    appTitle: "计划安排表",
+    dailyEncouragement: "每日鼓励",
+    navigationTools: "周切换",
+    update: "更新",
+    feedback: "反馈",
+    undo: "撤销",
+    redo: "恢复",
+    langToggle: "EN",
+    prevWeek: "上一周",
+    nextWeek: "下一周",
+    prevDay: "前一天",
+    nextDay: "后一天",
+    today: "今天",
+    thisWeek: "这周",
+    backToday: "回到今天",
+    backThisWeek: "回到这周",
+    currentWeekAria: "当前显示{label}，点击回到这周",
+    todayAria: "点击回到今天",
+    viewMode: "界面显示方式",
+    dayView: "一天",
+    weekView: "一周",
+    dayViewLabel: "一天视图",
+    schedule: "课程表式计划安排",
+    summaryTitle: "计划总结表",
+    clearWeek: "清空本周计划",
+    clearDone: "清除已完成",
+    done: "完成",
+    date: "日期",
+    weekday: "星期",
+    time: "时间",
+    planContent: "计划内容",
+    endTime: "结束时间",
+    repeatUntil: "持续到",
+    category: "任务属性",
+    categoryShort: "属性",
+    planPlaceholder: "例如：复习数学、完成项目、健身训练",
+    delete: "删除",
+    savePlan: "保存计划",
+    close: "关闭",
+    carryoverTitle: "昨日剩余未完成任务",
+    carryoverNote: "是否加入到今日任务中？如果选择否，这些昨日剩余未完成任务会被删除。",
+    noDelete: "否，删除",
+    yesAddToday: "是，加入今日",
+    rescheduleTitle: "调整剩余任务时间段",
+    rescheduleNote: "给每个剩余任务安排新的日期和时间段，默认会放到今天同一时间。",
+    saveAdjustment: "保存调整",
+    moodTitle: "完成后的心情",
+    task: "任务",
+    duration: "时长",
+    mood: "心情",
+    updateTitle: "应用更新",
+    downloadNew: "下载新版",
+    webUpdate: "网页更新",
+    cancel: "取消",
+    confirmClear: "确认清空",
+    feedbackTitle: "建议反馈",
+    feedbackType: "反馈类型",
+    feedbackFeature: "功能建议",
+    feedbackBug: "网站问题",
+    feedbackExperience: "使用体验",
+    feedbackOther: "其他",
+    feedbackContent: "反馈内容",
+    feedbackPlaceholder: "写下你遇到的问题，或者希望增加的功能",
+    contactOptional: "联系方式（可选）",
+    contactPlaceholder: "微信、邮箱或其他联系方式",
+    submitFeedback: "提交反馈",
+    timeHeader: "时间",
+    addPlan: "添加计划",
+    markDone: "标记完成",
+    continueUntil: "持续到 {date}",
+    unrecorded: "未记录",
+    hour: "小时",
+    originalTime: "原时间：",
+    newDate: "新日期",
+    startTime: "开始时间",
+    emptyDay: "点击上方时间段，输入今天的计划后，这里会显示当天总结。",
+    emptyWeek: "点击上方时间段，输入本周计划后，这里会显示当前周总结。",
+    previousWeekLabel: "上{count}周",
+    futureWeekLabel: "第{count}周",
+    undoDone: "已撤销上一步修改。",
+    redoDone: "已恢复刚才撤销的修改。",
+    feedbackEmpty: "先写一点反馈内容，再提交。",
+    feedbackNoEndpoint: "反馈收集地址还没配置，暂时无法提交。",
+    feedbackSuccess: "反馈已提交，谢谢你帮我把这个计划表变好。",
+    feedbackFail: "反馈暂时提交失败，请稍后再试。",
+    clearWeekDone: "已清空当前显示周的计划，可以用撤销找回。",
+    clearWeekEmpty: "当前显示周没有可清空的计划。",
+    clearDoneDone: "已清除当前视图里的完成项，可以用撤销找回来。",
+    carryoverSaved: "已把昨日剩余任务安放到新时间里，可以用撤销回退。",
+    carryoverDeleted: "昨日剩余未完成任务已删除，可以用撤销找回。",
+    clearWeekConfirm: "确定要清空 {range} 的全部计划吗？这个操作可以用“撤销”恢复。",
+    updateMessage: "当前应用版本：v{version}。网页版则直接点网页更新按钮，App 版则需下载新版本。",
+    latestVersion: "已经是最新版。今天的计划表也很清醒。",
+    updateUnavailable: "暂时无法检查更新。请确认 version.json 已部署到网页根目录。",
+    apkMissing: "还没有配置新版 APK 下载地址。以后打包 APK 后，把下载链接写进 version.json 的 apkUrl。",
+    versionReadFail: "暂时读取不到 version.json。部署到 GitHub Pages 后再试，或检查 version.json 是否在项目根目录。",
+    updateSuccess: "更新成功，已加载 v{version}。",
+    weeklyTitle: "周总结表",
+    weeklyEmpty: "这周未安排任务，无周总结。空白也可能是休整，只要你知道自己在做什么就好。",
+    weeklyPerfect: "完美周末！这周的每一项都落地了，给认真生活的你放一场小烟花。",
+    weeklyTooFull: "这周有超过 80% 的任务经常剩余到第二天。温柔地说一句：计划可能排得太满了。你不是机器，可以把目标切小一点，让完成感重新回来。",
+    weeklyNormal: "这周安排了 {total} 个任务，完成 {done} 个，总计 {hours} 小时。做得不必完美，但你确实在照看自己的时间。",
+  },
+  en: {
+    appTitle: "Planner",
+    dailyEncouragement: "Daily encouragement",
+    navigationTools: "Navigation tools",
+    update: "Update",
+    feedback: "Feedback",
+    undo: "Undo",
+    redo: "Redo",
+    langToggle: "中文",
+    prevWeek: "Previous week",
+    nextWeek: "Next week",
+    prevDay: "Previous day",
+    nextDay: "Next day",
+    today: "Today",
+    thisWeek: "This week",
+    backToday: "Back to today",
+    backThisWeek: "Back to this week",
+    currentWeekAria: "Currently showing {label}. Click to return to this week.",
+    todayAria: "Click to return to today",
+    viewMode: "View mode",
+    dayView: "Day",
+    weekView: "Week",
+    dayViewLabel: "Day view",
+    schedule: "Timetable planner",
+    summaryTitle: "Plan Summary",
+    clearWeek: "Clear This Week",
+    clearDone: "Clear Done",
+    done: "Done",
+    date: "Date",
+    weekday: "Day",
+    time: "Time",
+    planContent: "Plan",
+    endTime: "End time",
+    repeatUntil: "Repeat until",
+    category: "Category",
+    categoryShort: "Category",
+    planPlaceholder: "For example: review math, finish a project, work out",
+    delete: "Delete",
+    savePlan: "Save Plan",
+    close: "Close",
+    carryoverTitle: "Unfinished Tasks From Yesterday",
+    carryoverNote: "Add them to today? If you choose no, these unfinished tasks will be deleted.",
+    noDelete: "No, delete",
+    yesAddToday: "Yes, add to today",
+    rescheduleTitle: "Reschedule Remaining Tasks",
+    rescheduleNote: "Choose a new date and time block for each remaining task.",
+    saveAdjustment: "Save Changes",
+    moodTitle: "Mood After Completion",
+    task: "Task",
+    duration: "Duration",
+    mood: "Mood",
+    updateTitle: "App Update",
+    downloadNew: "Download New",
+    webUpdate: "Refresh Web",
+    cancel: "Cancel",
+    confirmClear: "Confirm Clear",
+    feedbackTitle: "Feedback",
+    feedbackType: "Feedback type",
+    feedbackFeature: "Feature request",
+    feedbackBug: "Website bug",
+    feedbackExperience: "Experience",
+    feedbackOther: "Other",
+    feedbackContent: "Feedback",
+    feedbackPlaceholder: "Describe the issue you met, or a feature you want",
+    contactOptional: "Contact (optional)",
+    contactPlaceholder: "WeChat, email, or another contact method",
+    submitFeedback: "Submit",
+    timeHeader: "Time",
+    addPlan: "Add plan",
+    markDone: "Mark as done",
+    continueUntil: "Until {date}",
+    unrecorded: "Not recorded",
+    hour: "hr",
+    originalTime: "Original time: ",
+    newDate: "New date",
+    startTime: "Start time",
+    emptyDay: "Tap a time block above and add a plan. Today's summary will appear here.",
+    emptyWeek: "Tap a time block above and add weekly plans. This week's summary will appear here.",
+    previousWeekLabel: "{count} week(s) ago",
+    futureWeekLabel: "Week {count}",
+    undoDone: "Undid the previous change.",
+    redoDone: "Restored the change you just undid.",
+    feedbackEmpty: "Please write some feedback before submitting.",
+    feedbackNoEndpoint: "Feedback collection is not configured yet.",
+    feedbackSuccess: "Feedback submitted. Thanks for helping improve this planner.",
+    feedbackFail: "Feedback failed to submit. Please try again later.",
+    clearWeekDone: "Cleared plans in the current week. You can undo this.",
+    clearWeekEmpty: "There are no plans to clear in the current week.",
+    clearDoneDone: "Cleared completed items in the current view. You can undo this.",
+    carryoverSaved: "Remaining tasks were rescheduled. You can undo this.",
+    carryoverDeleted: "Unfinished tasks from yesterday were deleted. You can undo this.",
+    clearWeekConfirm: "Clear all plans from {range}? You can restore them with Undo.",
+    updateMessage: "Current app version: v{version}. Use Refresh Web for the web version, or download a new app build.",
+    latestVersion: "You are already on the latest version.",
+    updateUnavailable: "Unable to check for updates. Please make sure version.json is deployed.",
+    apkMissing: "No APK download URL is configured yet. Add an apkUrl to version.json after packaging an APK.",
+    versionReadFail: "Unable to read version.json. Try again after deploying to GitHub Pages.",
+    updateSuccess: "Updated successfully. Loaded v{version}.",
+    weeklyTitle: "Weekly Review",
+    weeklyEmpty: "No tasks were scheduled this week, so there is no weekly review.",
+    weeklyPerfect: "Perfect week. Every task landed. Nice work.",
+    weeklyTooFull: "More than 80% of this week's tasks were carried over. Your plan may be too full. Try making goals smaller.",
+    weeklyNormal: "This week had {total} task(s), {done} completed, and {hours} total hour(s). You are taking care of your time.",
+  },
+};
+const dailyQuotes = {
+  zh: [
+    "今天也不用一步登天，先把眼前这一小步走稳。",
+    "计划不是束缚，是帮你把心里的光落到地上。",
+    "慢慢来，但别停下。你正在把混乱整理成答案。",
+    "把大目标切成小任务，每完成一格，未来就亮一点。",
+    "今天的你只需要比昨天多前进一点点，就已经很好。",
+    "不用等状态完美才开始，开始本身就会制造状态。",
+    "你写下的每个计划，都在替明天的自己省一点力气。",
+    "认真生活的人，连普通的一天也能变得有方向。",
+    "先完成，再完美。先行动，再修正。",
+    "当你愿意安排时间，时间也会慢慢站到你这边。",
+    "别小看今天的一格，它可能是未来很大变化的起点。",
+    "清醒地安排，温柔地执行，坚定地完成。",
+    "任务会变少，能力会变多，你正在升级。",
+    "今天的努力不一定马上发光，但它一定在蓄电。",
+    "把焦虑放进表格，把行动放进时间。",
+  ],
+  en: [
+    "You do not need to leap today. Just make the next step steady.",
+    "A plan is not a cage. It helps your ideas land in real time.",
+    "Go slowly, but keep going. You are turning clutter into answers.",
+    "Cut big goals into small tasks. Each finished block lights the way.",
+    "A tiny step beyond yesterday is already enough.",
+    "You do not need a perfect mood to begin. Beginning creates momentum.",
+    "Every plan you write saves tomorrow-you a little energy.",
+    "A clear direction can make an ordinary day feel alive.",
+    "Finish first, improve later. Act first, adjust later.",
+    "When you arrange time, time starts standing on your side.",
+    "Do not underestimate one block today. It may start a big change.",
+    "Plan clearly, act gently, finish firmly.",
+    "Tasks get fewer. Skills get stronger. You are leveling up.",
+    "Today's effort may not glow yet, but it is charging.",
+    "Put anxiety into the grid. Put action into the hour.",
+  ],
+};
+const cheerMessages = {
+  zh: [
+    "你真棒！这格被你拿下了。",
+    "完成！今日能量条偷偷涨了一截。",
+    "干得漂亮，计划表已经开始佩服你了。",
+    "叮！一枚任务被你优雅解决。",
+    "很好，这一下很有执行力的味道。",
+    "恭喜，拖延症刚刚被你轻轻击退。",
+    "这不是打勾，这是给未来的自己递奶茶。",
+    "冷知识：完成任务会让人看起来更像主角。",
+    "漂亮！这一勾，有点像人生在点头。",
+    "任务已收工，脑内小烟花可以放一秒。",
+  ],
+  en: [
+    "Nice work. That block is yours now.",
+    "Done. Today's energy bar just went up.",
+    "Beautifully handled. The planner is impressed.",
+    "One task solved with style.",
+    "Good. That had real follow-through energy.",
+    "That checkmark was a gift to future-you.",
+    "Tiny win, real momentum.",
+    "Done tasks make the day feel lighter.",
+    "That checkmark looks good on you.",
+    "Task wrapped. You earned the little spark.",
+  ],
+};
 const categories = {
-  study: { label: "学习", icon: "📚", color: "#4f7fbf" },
-  work: { label: "工作", icon: "💼", color: "#287c66" },
-  health: { label: "健康", icon: "🌿", color: "#75a843" },
-  life: { label: "生活", icon: "🏠", color: "#d08a31" },
-  creative: { label: "创作", icon: "✨", color: "#9b63b5" },
-  social: { label: "社交", icon: "☕", color: "#c86666" },
-  rest: { label: "休息", icon: "🌙", color: "#60708f" },
+  study: { labels: { zh: "学习", en: "Study" }, icon: "📚", color: "#4f7fbf" },
+  work: { labels: { zh: "工作", en: "Work" }, icon: "💼", color: "#287c66" },
+  health: { labels: { zh: "健康", en: "Health" }, icon: "🌿", color: "#75a843" },
+  life: { labels: { zh: "生活", en: "Life" }, icon: "🏠", color: "#d08a31" },
+  creative: { labels: { zh: "创作", en: "Creative" }, icon: "✨", color: "#9b63b5" },
+  social: { labels: { zh: "社交", en: "Social" }, icon: "☕", color: "#c86666" },
+  rest: { labels: { zh: "休息", en: "Rest" }, icon: "🌙", color: "#60708f" },
 };
 const moods = [
-  { value: "happy", label: "开心 😊" },
-  { value: "calm", label: "平静 🍵" },
-  { value: "tired", label: "有点累 😮‍💨" },
-  { value: "proud", label: "很骄傲 😎" },
-  { value: "stuck", label: "卡过但过了 🧩" },
-  { value: "light", label: "松了一口气 🌤️" },
+  { value: "happy", labels: { zh: "开心 😊", en: "Happy 😊" } },
+  { value: "calm", labels: { zh: "平静 🍵", en: "Calm 🍵" } },
+  { value: "tired", labels: { zh: "有点累 😮‍💨", en: "A bit tired 😮‍💨" } },
+  { value: "proud", labels: { zh: "很骄傲 😎", en: "Proud 😎" } },
+  { value: "stuck", labels: { zh: "卡过但过了 🧩", en: "Got unstuck 🧩" } },
+  { value: "light", labels: { zh: "松了一口气 🌤️", en: "Relieved 🌤️" } },
 ];
 
 const scheduleGrid = document.querySelector("#scheduleGrid");
@@ -97,11 +343,19 @@ const clearWeekDialog = document.querySelector("#clearWeekDialog");
 const clearWeekMessage = document.querySelector("#clearWeekMessage");
 const dayViewBtn = document.querySelector("#dayViewBtn");
 const weekViewBtn = document.querySelector("#weekViewBtn");
+const feedbackBtn = document.querySelector("#feedbackBtn");
+const feedbackDialog = document.querySelector("#feedbackDialog");
+const feedbackType = document.querySelector("#feedbackType");
+const feedbackText = document.querySelector("#feedbackText");
+const feedbackContact = document.querySelector("#feedbackContact");
+const sendFeedback = document.querySelector("#sendFeedback");
+const langToggle = document.querySelector("#langToggle");
 
 let plans = normalizePlans(JSON.parse(localStorage.getItem(storageKey) || "{}"));
 let selectedDate = new Date();
 let weekStart = getMonday(selectedDate);
 let viewMode = localStorage.getItem(viewModeStorageKey) === "week" ? "week" : "day";
+let currentLang = localStorage.getItem(languageStorageKey) === "en" ? "en" : "zh";
 let activeKey = "";
 let activeDateKey = "";
 let activeSlot = "";
@@ -119,6 +373,30 @@ function pad(value) {
   return String(value).padStart(2, "0");
 }
 
+function t(key, params = {}) {
+  const template = translations[currentLang]?.[key] || translations.zh[key] || key;
+  return Object.entries(params).reduce((text, [name, value]) => text.replaceAll(`{${name}}`, value), template);
+}
+
+function applyStaticTranslations() {
+  document.documentElement.lang = currentLang === "en" ? "en" : "zh-CN";
+  document.title = t("appTitle");
+  langToggle.textContent = t("langToggle");
+
+  document.querySelectorAll("[data-i18n]").forEach((element) => {
+    element.textContent = t(element.dataset.i18n);
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
+    element.placeholder = t(element.dataset.i18nPlaceholder);
+  });
+  document.querySelectorAll("[data-i18n-aria]").forEach((element) => {
+    element.setAttribute("aria-label", t(element.dataset.i18nAria));
+  });
+  document.querySelectorAll("[data-i18n-title]").forEach((element) => {
+    element.title = t(element.dataset.i18nTitle);
+  });
+}
+
 function todayKey() {
   return toDateKey(new Date());
 }
@@ -132,7 +410,17 @@ function fromDateKey(dateKey) {
 }
 
 function formatDate(date) {
+  if (currentLang === "en") {
+    return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+  }
   return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+}
+
+function formatMonth(date) {
+  if (currentLang === "en") {
+    return date.toLocaleDateString("en-US", { year: "numeric", month: "long" });
+  }
+  return `${date.getFullYear()}年${date.getMonth() + 1}月`;
 }
 
 function getMonday(date) {
@@ -171,11 +459,15 @@ function getVisibleWeekLabel() {
 }
 
 function getWeekday(date) {
+  if (currentLang === "en") {
+    return date.toLocaleDateString("en-US", { weekday: "short" });
+  }
   return weekdays[(date.getDay() + 6) % 7];
 }
 
 function getCategory(value) {
-  return categories[value] || categories.study;
+  const category = categories[value] || categories.study;
+  return { ...category, label: category.labels[currentLang] || category.labels.zh };
 }
 
 function normalizePlans(savedPlans) {
@@ -275,7 +567,7 @@ function undoLastChange() {
   if (!snapshot) {
     return;
   }
-  restorePlans(snapshot, redoStack, "已撤销上一步修改。");
+  restorePlans(snapshot, redoStack, t("undoDone"));
 }
 
 function redoLastChange() {
@@ -283,7 +575,60 @@ function redoLastChange() {
   if (!snapshot) {
     return;
   }
-  restorePlans(snapshot, undoStack, "已恢复刚才撤销的修改。");
+  restorePlans(snapshot, undoStack, t("redoDone"));
+}
+
+function getFeedbackPayload() {
+  return {
+    type: feedbackType.value,
+    message: feedbackText.value.trim(),
+    contact: feedbackContact.value.trim(),
+    page: window.location.href,
+    appVersion,
+    viewMode,
+    date: toDateKey(selectedDate),
+    userAgent: navigator.userAgent,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+async function submitFeedback() {
+  const payload = getFeedbackPayload();
+  if (!payload.message) {
+    showCheer(t("feedbackEmpty"));
+    return false;
+  }
+
+  if (!feedbackSubmitUrl) {
+    showCheer(t("feedbackNoEndpoint"));
+    return false;
+  }
+
+  sendFeedback.disabled = true;
+  try {
+    const response = await fetch(feedbackSubmitUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error("Feedback request failed");
+    }
+
+    feedbackText.value = "";
+    feedbackContact.value = "";
+    showCheer(t("feedbackSuccess"));
+    return true;
+  } catch (error) {
+    showCheer(t("feedbackFail"));
+    return false;
+  } finally {
+    sendFeedback.disabled = false;
+  }
 }
 
 function clearVisibleWeekPlans() {
@@ -298,9 +643,9 @@ function clearVisibleWeekPlans() {
   });
 
   if (commitPlanChange(before)) {
-    showCheer("已清空当前显示周的计划，可以用撤销找回。");
+    showCheer(t("clearWeekDone"));
   } else {
-    showCheer("当前显示周没有可清空的计划。");
+    showCheer(t("clearWeekEmpty"));
   }
 }
 
@@ -367,6 +712,7 @@ function removePlansInRange(dateKey, startIndex, span, keepKey = "") {
 }
 
 function render() {
+  applyStaticTranslations();
   renderDailyQuote();
   renderHeader();
   renderViewMode();
@@ -377,22 +723,23 @@ function render() {
 function renderDailyQuote() {
   const today = new Date();
   const dateNumber = Number(`${today.getFullYear()}${pad(today.getMonth() + 1)}${pad(today.getDate())}`);
-  dailyQuote.textContent = dailyQuotes[dateNumber % dailyQuotes.length];
+  const quotes = dailyQuotes[currentLang] || dailyQuotes.zh;
+  dailyQuote.textContent = quotes[dateNumber % quotes.length];
 }
 
 function renderHeader() {
   const dates = getVisibleDates();
   const first = dates[0];
   const last = dates[dates.length - 1];
-  monthLabel.textContent = viewMode === "day" ? formatDate(first) : `${first.getFullYear()}年${first.getMonth() + 1}月`;
-  weekRange.textContent = viewMode === "day" ? `${getWeekday(first)} · 一天视图` : `${formatDate(first)} - ${formatDate(last)}`;
-  todayBtn.textContent = viewMode === "day" ? "今天" : getRelativeWeekLabel();
-  todayBtn.title = viewMode === "day" ? "回到今天" : "回到这周";
-  todayBtn.setAttribute("aria-label", viewMode === "day" ? "点击回到今天" : `当前显示${todayBtn.textContent}，点击回到这周`);
-  document.querySelector("#prevWeek").title = viewMode === "day" ? "前一天" : "上一周";
-  document.querySelector("#prevWeek").setAttribute("aria-label", viewMode === "day" ? "前一天" : "上一周");
-  document.querySelector("#nextWeek").title = viewMode === "day" ? "后一天" : "下一周";
-  document.querySelector("#nextWeek").setAttribute("aria-label", viewMode === "day" ? "后一天" : "下一周");
+  monthLabel.textContent = viewMode === "day" ? formatDate(first) : formatMonth(first);
+  weekRange.textContent = viewMode === "day" ? `${getWeekday(first)} · ${t("dayViewLabel")}` : `${formatDate(first)} - ${formatDate(last)}`;
+  todayBtn.textContent = viewMode === "day" ? t("today") : getRelativeWeekLabel();
+  todayBtn.title = viewMode === "day" ? t("backToday") : t("backThisWeek");
+  todayBtn.setAttribute("aria-label", viewMode === "day" ? t("todayAria") : t("currentWeekAria", { label: todayBtn.textContent }));
+  document.querySelector("#prevWeek").title = viewMode === "day" ? t("prevDay") : t("prevWeek");
+  document.querySelector("#prevWeek").setAttribute("aria-label", viewMode === "day" ? t("prevDay") : t("prevWeek"));
+  document.querySelector("#nextWeek").title = viewMode === "day" ? t("nextDay") : t("nextWeek");
+  document.querySelector("#nextWeek").setAttribute("aria-label", viewMode === "day" ? t("nextDay") : t("nextWeek"));
 }
 
 function renderViewMode() {
@@ -409,20 +756,20 @@ function getRelativeWeekLabel() {
   const diffWeeks = Math.round(diffDays / 7);
 
   if (diffWeeks === 0) {
-    return "这周";
+    return t("thisWeek");
   }
 
   if (diffWeeks > 0) {
-    return `第${diffWeeks + 1}周`;
+    return t("futureWeekLabel", { count: diffWeeks + 1 });
   }
 
-  return `上${Math.abs(diffWeeks)}周`;
+  return t("previousWeekLabel", { count: Math.abs(diffWeeks) });
 }
 
 function renderGrid() {
   const dates = getVisibleDates();
   scheduleGrid.innerHTML = "";
-  scheduleGrid.appendChild(createCell("时间", "corner-cell", 1, 1));
+  scheduleGrid.appendChild(createCell(t("timeHeader"), "corner-cell", 1, 1));
 
   dates.forEach((date, index) => {
     const cell = createCell("", "day-cell", index + 2, 1);
@@ -459,7 +806,7 @@ function renderGrid() {
       button.dataset.slotIndex = String(slotIndex);
       button.innerHTML = plan
         ? `<span class="plan-meta">${category.icon} ${category.label}${plan.mood ? ` · ${escapeHtml(getMoodLabel(plan.mood))}` : ""}</span><span class="plan-title">${escapeHtml(plan.text)}</span>`
-        : `<span class="plan-title">添加计划</span>`;
+        : `<span class="plan-title">${t("addPlan")}</span>`;
       button.addEventListener("click", openPlanDialog);
       cell.appendChild(button);
       scheduleGrid.appendChild(cell);
@@ -527,23 +874,20 @@ function renderSummary() {
   const entries = getSortedEntries().filter((entry) => visibleKeys.has(entry.dateKey));
   summaryBody.innerHTML = "";
   emptyState.hidden = entries.length > 0;
-  emptyState.textContent =
-    viewMode === "day"
-      ? "点击上方时间段，输入今天的计划后，这里会显示当天总结。"
-      : "点击上方时间段，输入本周计划后，这里会显示当前周总结。";
+  emptyState.textContent = viewMode === "day" ? t("emptyDay") : t("emptyWeek");
 
   entries.forEach((entry) => {
     const category = getCategory(entry.category);
     const row = document.createElement("tr");
     row.className = entry.done ? "done-row" : "";
     row.innerHTML = `
-      <td><input type="checkbox" ${entry.done ? "checked" : ""} aria-label="标记完成"></td>
+      <td><input type="checkbox" ${entry.done ? "checked" : ""} aria-label="${t("markDone")}"></td>
       <td>${escapeHtml(entry.dateKey)}</td>
       <td>${escapeHtml(entry.weekday)}</td>
       <td>${escapeHtml(getTimeRange(entry.slot, entry.span))}</td>
       <td>
         <span class="pill" style="--category-color:${category.color}; border:1px solid ${category.color};">${category.icon} ${category.label}</span>
-        ${entry.dueDate && entry.dueDate > entry.dateKey ? `<span class="pill">持续到 ${escapeHtml(entry.dueDate)}</span>` : ""}
+        ${entry.dueDate && entry.dueDate > entry.dateKey ? `<span class="pill">${t("continueUntil", { date: escapeHtml(entry.dueDate) })}</span>` : ""}
         ${entry.mood ? `<span class="pill">${escapeHtml(getMoodLabel(entry.mood))}</span>` : ""}
         <div>${escapeHtml(entry.text)}</div>
       </td>
@@ -566,20 +910,22 @@ function getSortedEntries() {
   return Object.entries(plans)
     .map(([key, plan]) => {
       const [dateKey, slot] = key.split("|");
-      const weekday = weekdays[(fromDateKey(dateKey).getDay() + 6) % 7];
+      const weekday = getWeekday(fromDateKey(dateKey));
       return { key, dateKey, slot, weekday, ...plan };
     })
     .sort((a, b) => `${a.dateKey} ${a.slot}`.localeCompare(`${b.dateKey} ${b.slot}`));
 }
 
 function getMoodLabel(value) {
-  return moods.find((mood) => mood.value === value)?.label || value;
+  const mood = moods.find((item) => item.value === value);
+  return mood?.labels[currentLang] || mood?.labels.zh || value;
 }
 
 function showCheer(message = "") {
   const card = document.createElement("div");
   card.className = "cheer-card";
-  card.textContent = message || cheerMessages[Math.floor(Math.random() * cheerMessages.length)];
+  const messages = cheerMessages[currentLang] || cheerMessages.zh;
+  card.textContent = message || messages[Math.floor(Math.random() * messages.length)];
   cheerStack.appendChild(card);
   window.setTimeout(() => card.remove(), 3100);
 }
@@ -593,7 +939,7 @@ function openMoodDialog(key) {
     button.className = "mood-button";
     button.type = "submit";
     button.value = mood.value;
-    button.textContent = mood.label;
+    button.textContent = mood.labels[currentLang] || mood.labels.zh;
     moodGrid.appendChild(button);
   });
   moodDialog.showModal();
@@ -671,15 +1017,15 @@ function renderRescheduleDialog() {
     item.dataset.oldKey = entry.key;
     item.innerHTML = `
       <strong>${escapeHtml(entry.text)}</strong>
-      <small>原时间：${escapeHtml(entry.dateKey)} · ${escapeHtml(getTimeRange(entry.slot, entry.span))}</small>
+      <small>${t("originalTime")}${escapeHtml(entry.dateKey)} · ${escapeHtml(getTimeRange(entry.slot, entry.span))}</small>
       <div class="reschedule-row">
-        <label>新日期
+        <label>${t("newDate")}
           <input class="carry-date" type="date" value="${today}" min="${today}">
         </label>
-        <label>开始时间
+        <label>${t("startTime")}
           <select class="carry-start">${slots.map((slot) => `<option value="${slot}" ${slot === entry.slot ? "selected" : ""}>${slot}</option>`).join("")}</select>
         </label>
-        <label>结束时间
+        <label>${t("endTime")}
           <select class="carry-span" data-span="${entry.span}"></select>
         </label>
       </div>
@@ -738,7 +1084,7 @@ function saveCarryoverReschedules() {
 
   localStorage.setItem(carryoverSeenKey, getCarryoverSignature());
   if (commitPlanChange(before)) {
-    showCheer("已把昨日剩余任务安放到新时间里，可以用撤销回退。");
+    showCheer(t("carryoverSaved"));
   }
 }
 
@@ -749,7 +1095,7 @@ function discardCarryovers() {
   });
   localStorage.setItem(carryoverSeenKey, getCarryoverSignature());
   if (commitPlanChange(before)) {
-    showCheer("昨日剩余未完成任务已删除，可以用撤销找回。");
+    showCheer(t("carryoverDeleted"));
   }
 }
 
@@ -775,12 +1121,12 @@ function renderWeeklySummary() {
   const weekKeys = Array.from({ length: 7 }, (_, index) => toDateKey(addDays(monday, index)));
   const entries = getSortedEntries().filter((entry) => weekKeys.includes(entry.dateKey));
 
-  weeklyTitle.textContent = "周总结表";
+  weeklyTitle.textContent = t("weeklyTitle");
   weeklyChart.innerHTML = "";
   weeklyBody.innerHTML = "";
 
   if (!entries.length) {
-    weeklyMessage.textContent = "这周未安排任务，无周总结。空白也可能是休整，只要你知道自己在做什么就好。";
+    weeklyMessage.textContent = t("weeklyEmpty");
     weeklyDialog.showModal();
     return;
   }
@@ -798,8 +1144,8 @@ function renderWeeklySummary() {
     row.innerHTML = `
       <td>${escapeHtml(entry.text)}</td>
       <td><span class="pill" style="border:1px solid ${category.color};">${category.icon} ${category.label}</span></td>
-      <td>${getDurationHours(entry.span)} 小时</td>
-      <td>${entry.mood ? escapeHtml(getMoodLabel(entry.mood)) : "未记录"}</td>
+      <td>${getDurationHours(entry.span)} ${t("hour")}</td>
+      <td>${entry.mood ? escapeHtml(getMoodLabel(entry.mood)) : t("unrecorded")}</td>
     `;
     weeklyBody.appendChild(row);
   });
@@ -812,22 +1158,22 @@ function renderWeeklySummary() {
     row.innerHTML = `
       <span class="chart-label">${category.icon} ${category.label}</span>
       <span class="chart-track"><span class="chart-bar" style="--bar-width:${Math.max(8, (hours / totalHours) * 100)}%;"></span></span>
-      <span>${hours} 小时</span>
+      <span>${hours} ${t("hour")}</span>
     `;
     weeklyChart.appendChild(row);
   });
 
   if (completed.length === entries.length && carried.length === 0) {
-    weeklyMessage.textContent = "完美周末！这周的每一项都落地了，给认真生活的你放一场小烟花。";
+    weeklyMessage.textContent = t("weeklyPerfect");
     weeklyDialog.showModal();
     launchConfetti();
     return;
   }
 
   if (carriedRatio > 0.8) {
-    weeklyMessage.textContent = "这周有超过 80% 的任务经常剩余到第二天。温柔地说一句：计划可能排得太满了。你不是机器，可以把目标切小一点，让完成感重新回来。";
+    weeklyMessage.textContent = t("weeklyTooFull");
   } else {
-    weeklyMessage.textContent = `这周安排了 ${entries.length} 个任务，完成 ${completed.length} 个，总计 ${totalHours} 小时。做得不必完美，但你确实在照看自己的时间。`;
+    weeklyMessage.textContent = t("weeklyNormal", { total: entries.length, done: completed.length, hours: totalHours });
   }
 
   weeklyDialog.showModal();
@@ -865,8 +1211,40 @@ function setViewMode(nextMode) {
   render();
 }
 
+function setLanguage(nextLang) {
+  const selectedCategory = planCategory.value;
+  currentLang = nextLang;
+  localStorage.setItem(languageStorageKey, currentLang);
+  renderCategoryOptions();
+  if (selectedCategory) {
+    planCategory.value = selectedCategory;
+  }
+  render();
+}
+
 dayViewBtn.addEventListener("click", () => setViewMode("day"));
 weekViewBtn.addEventListener("click", () => setViewMode("week"));
+
+langToggle.addEventListener("click", () => {
+  setLanguage(currentLang === "zh" ? "en" : "zh");
+});
+
+feedbackBtn.addEventListener("click", () => {
+  if (feedbackFormUrl) {
+    window.open(feedbackFormUrl, "_blank", "noopener");
+    return;
+  }
+
+  feedbackDialog.returnValue = "";
+  feedbackDialog.showModal();
+  feedbackText.focus();
+});
+
+feedbackDialog.addEventListener("close", async () => {
+  if (feedbackDialog.returnValue === "send") {
+    await submitFeedback();
+  }
+});
 
 document.querySelector("#prevWeek").addEventListener("click", () => {
   selectedDate = addDays(selectedDate, viewMode === "day" ? -1 : -7);
@@ -896,12 +1274,12 @@ document.querySelector("#clearDone").addEventListener("click", () => {
     }
   });
   if (commitPlanChange(before)) {
-    showCheer("已清除当前视图里的完成项，可以用撤销找回来。");
+    showCheer(t("clearDoneDone"));
   }
 });
 
 clearWeekBtn.addEventListener("click", () => {
-  clearWeekMessage.textContent = `确定要清空 ${getVisibleWeekLabel()} 的全部计划吗？这个操作可以用“撤销”恢复。`;
+  clearWeekMessage.textContent = t("clearWeekConfirm", { range: getVisibleWeekLabel() });
   clearWeekDialog.returnValue = "";
   clearWeekDialog.showModal();
 });
@@ -973,7 +1351,7 @@ undoBtn.addEventListener("click", undoLastChange);
 redoBtn.addEventListener("click", redoLastChange);
 
 updateBtn.addEventListener("click", () => {
-  updateMessage.textContent = `当前应用版本：v${appVersion}。网页版则直接点网页更新按钮，App 版则需下载新版本。`;
+  updateMessage.textContent = t("updateMessage", { version: appVersion });
   updateDialog.showModal();
 });
 
@@ -1002,11 +1380,11 @@ async function checkWebVersionAndUpdate() {
     const latestVersion = versionInfo.version || appVersion;
 
     if (compareVersions(latestVersion, appVersion) <= 0 && window.location.href.startsWith(webAppUrl)) {
-      showCheer("已经是最新版。今天的计划表也很清醒。");
+      showCheer(t("latestVersion"));
       return;
     }
 
-    sessionStorage.setItem("planning-update-message", `更新成功，已加载 v${latestVersion}。`);
+    sessionStorage.setItem("planning-update-message", t("updateSuccess", { version: latestVersion }));
 
     if (window.location.href.startsWith(webAppUrl)) {
       window.location.reload();
@@ -1015,7 +1393,7 @@ async function checkWebVersionAndUpdate() {
 
     window.location.href = `${webAppUrl}?updated=1`;
   } catch (error) {
-    showCheer("暂时无法检查更新。请确认 version.json 已部署到网页根目录。");
+    showCheer(t("updateUnavailable"));
   }
 }
 
@@ -1047,9 +1425,9 @@ async function downloadLatestApk() {
       return;
     }
 
-    showCheer("还没有配置新版 APK 下载地址。以后打包 APK 后，把下载链接写进 version.json 的 apkUrl。");
+    showCheer(t("apkMissing"));
   } catch (error) {
-    showCheer("暂时读取不到 version.json。部署到 GitHub Pages 后再试，或检查 version.json 是否在项目根目录。");
+    showCheer(t("versionReadFail"));
   }
 }
 
@@ -1073,7 +1451,7 @@ function showPendingUpdateMessage() {
   }
 
   if (url.searchParams.get("updated") === "1") {
-    showCheer(`更新成功，已加载 v${appVersion}。`);
+    showCheer(t("updateSuccess", { version: appVersion }));
     url.searchParams.delete("updated");
     window.history.replaceState({}, "", url.toString());
   }
