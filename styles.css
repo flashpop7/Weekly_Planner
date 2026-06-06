@@ -10,6 +10,10 @@
   --warm: #f4b942;
   --danger: #bf4b4b;
   --shadow: 0 18px 40px rgba(31, 43, 39, 0.08);
+  --panel-bg: rgba(255, 255, 255, 0.56);
+  --panel-bg-strong: rgba(255, 255, 255, 0.76);
+  --cell-bg: rgba(255, 255, 255, 0.5);
+  --cell-bg-strong: rgba(255, 255, 255, 0.72);
   --user-bg: #f6f7f4;
   --user-bg-image: none;
 }
@@ -35,8 +39,8 @@ body.has-photo-bg::before {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: rgba(246, 247, 244, 0.72);
-  backdrop-filter: blur(1px);
+  background: rgba(246, 247, 244, 0.26);
+  backdrop-filter: blur(0.5px);
 }
 
 button,
@@ -69,7 +73,8 @@ button:disabled {
   margin-bottom: 12px;
   padding: 11px 16px;
   border: 1px solid rgba(40, 124, 102, 0.2);
-  background: #fffdf7;
+  background: rgba(255, 253, 247, 0.68);
+  backdrop-filter: blur(10px);
   box-shadow: var(--shadow);
 }
 
@@ -91,9 +96,10 @@ button:disabled {
 .planner-band,
 .progress-band,
 .summary-band {
-  background: var(--paper);
-  border: 1px solid var(--line);
+  background: var(--panel-bg);
+  border: 1px solid rgba(223, 228, 225, 0.72);
   box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
 }
 
 .planner-band {
@@ -168,7 +174,7 @@ h3 {
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: var(--paper);
+  background: var(--panel-bg-strong);
 }
 
 .nav-control .icon-button,
@@ -203,7 +209,8 @@ h3 {
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fbfcfa;
+  background: rgba(251, 252, 250, 0.62);
+  backdrop-filter: blur(8px);
 }
 
 .stat-card strong {
@@ -256,7 +263,8 @@ h3 {
   border: 1px solid var(--line);
   border-left: 6px solid var(--category-color, var(--accent));
   border-radius: 8px;
-  background: #fff;
+  background: var(--cell-bg-strong);
+  backdrop-filter: blur(8px);
 }
 
 .module-head {
@@ -309,6 +317,31 @@ h3 {
   text-decoration: line-through;
 }
 
+.subtask-editor {
+  display: grid;
+  gap: 8px;
+}
+
+.subtask-edit-row {
+  display: grid;
+  grid-template-columns: 1fr 36px;
+  gap: 8px;
+  align-items: center;
+}
+
+.subtask-edit-row input {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 10px;
+  color: var(--ink);
+}
+
+.add-subtask-button {
+  justify-self: start;
+}
+
 .view-switch {
   display: inline-flex;
   gap: 4px;
@@ -330,7 +363,7 @@ h3 {
 }
 
 .view-button.is-active {
-  background: var(--paper);
+  background: var(--panel-bg-strong);
   color: var(--accent-dark);
   box-shadow: 0 4px 12px rgba(31, 43, 39, 0.08);
 }
@@ -341,7 +374,7 @@ h3 {
 .save-button,
 .delete-button {
   border: 1px solid var(--line);
-  background: var(--paper);
+  background: var(--panel-bg-strong);
   color: var(--ink);
   min-height: 36px;
   border-radius: 8px;
@@ -415,7 +448,8 @@ h3 {
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: var(--paper);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
   box-shadow: 0 14px 30px rgba(31, 43, 39, 0.14);
 }
 
@@ -423,7 +457,7 @@ h3 {
   min-height: 38px;
   border: 0;
   border-bottom: 1px solid var(--line);
-  background: var(--paper);
+  background: transparent;
   color: var(--accent-dark);
   padding: 0 14px;
   text-align: left;
@@ -492,14 +526,15 @@ h3 {
   min-height: 58px;
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
-  background: #fff;
+  background: var(--cell-bg);
 }
 
 .corner-cell,
 .day-cell,
 .time-cell {
-  background: var(--soft);
+  background: rgba(237, 244, 241, 0.78);
   font-weight: 700;
+  backdrop-filter: blur(8px);
 }
 
 .corner-cell,
@@ -558,20 +593,21 @@ h3 {
 .plan-button:hover,
 .plan-button:focus-visible {
   border-color: var(--accent);
-  background: #f7fbf9;
+  background: rgba(247, 251, 249, 0.74);
   outline: none;
 }
 
 .plan-button.has-plan {
   border-style: solid;
   border-color: rgba(40, 124, 102, 0.28);
-  background: #eaf6f1;
+  background: rgba(234, 246, 241, 0.72);
   color: var(--ink);
   border-left: 5px solid var(--category-color, var(--accent));
+  backdrop-filter: blur(6px);
 }
 
 .plan-button.is-done {
-  background: #f0f1ed;
+  background: rgba(240, 241, 237, 0.64);
   color: #7b8078;
   text-decoration: line-through;
 }
@@ -620,7 +656,8 @@ h3 {
   position: sticky;
   top: 0;
   z-index: 1;
-  background: var(--paper);
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(8px);
   color: var(--muted);
   font-size: 12px;
   font-weight: 700;
@@ -634,23 +671,75 @@ h3 {
 
 .summary-table td:nth-child(2),
 .summary-table th:nth-child(2) {
-  width: 94px;
+  width: 54px;
 }
 
 .summary-table td:nth-child(3),
 .summary-table th:nth-child(3) {
-  width: 54px;
+  width: 98px;
 }
 
-.summary-table td:nth-child(4),
-.summary-table th:nth-child(4) {
-  width: 98px;
+.summary-table td:nth-child(5),
+.summary-table th:nth-child(5) {
+  width: 72px;
 }
 
 .summary-table input[type="checkbox"] {
   width: 20px;
   height: 20px;
   accent-color: var(--accent);
+}
+
+.summary-module summary {
+  display: grid;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.summary-module-title {
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.summary-module-detail {
+  display: grid;
+  gap: 7px;
+  margin-top: 8px;
+}
+
+.summary-subtasks {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.summary-subtasks li {
+  margin: 4px 0;
+}
+
+.summary-subtasks li.is-done {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.summary-subtasks-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.summary-progress-track {
+  height: 7px;
+  margin-top: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--soft);
+}
+
+.summary-progress-track div {
+  width: var(--progress-width);
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
 }
 
 .done-row {
@@ -672,6 +761,8 @@ h3 {
   border-radius: 8px;
   padding: 0;
   box-shadow: var(--shadow);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
 }
 
 .wide-dialog {
@@ -697,6 +788,16 @@ h3 {
   font-weight: 700;
 }
 
+.time-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.time-fields .plan-field {
+  margin-bottom: 0;
+}
+
 .plan-field input,
 .plan-field textarea {
   width: 100%;
@@ -704,6 +805,7 @@ h3 {
   border-radius: 8px;
   padding: 12px;
   color: var(--ink);
+  background: rgba(255, 255, 255, 0.82);
 }
 
 .plan-field textarea {
@@ -723,7 +825,7 @@ h3 {
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 0 12px;
-  background: #fff;
+  background: var(--panel-bg-strong);
   color: var(--ink);
 }
 
@@ -776,7 +878,7 @@ h3 {
   border: 1px solid rgba(40, 124, 102, 0.22);
   border-left: 5px solid var(--warm);
   border-radius: 8px;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.88);
   color: var(--ink);
   box-shadow: 0 16px 32px rgba(31, 43, 39, 0.16);
   font-weight: 800;
@@ -805,7 +907,8 @@ h3 {
   border: 1px solid var(--line);
   border-left: 6px solid var(--category-color, var(--accent));
   border-radius: 8px;
-  background: #fff;
+  background: var(--cell-bg-strong);
+  backdrop-filter: blur(8px);
 }
 
 .task-item strong {
@@ -851,7 +954,7 @@ h3 {
   min-height: 48px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--panel-bg-strong);
   color: var(--ink);
   font-weight: 800;
 }
@@ -859,7 +962,7 @@ h3 {
 .mood-button:hover,
 .mood-button:focus-visible {
   border-color: var(--accent);
-  background: #f7fbf9;
+  background: rgba(247, 251, 249, 0.78);
   outline: none;
 }
 
@@ -1102,20 +1205,24 @@ h3 {
 
   .summary-table td:nth-child(2),
   .summary-table th:nth-child(2) {
-    width: 82px;
+    width: 44px;
   }
 
   .summary-table td:nth-child(3),
   .summary-table th:nth-child(3) {
-    width: 44px;
-  }
-
-  .summary-table td:nth-child(4),
-  .summary-table th:nth-child(4) {
     width: 78px;
   }
 
+  .summary-table td:nth-child(5),
+  .summary-table th:nth-child(5) {
+    width: 64px;
+  }
+
   .reschedule-row {
+    grid-template-columns: 1fr;
+  }
+
+  .time-fields {
     grid-template-columns: 1fr;
   }
 

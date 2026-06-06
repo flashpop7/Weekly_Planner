@@ -10,7 +10,7 @@ const historyStorageKey = "simple-week-planner-history";
 const viewModeStorageKey = "simple-week-planner-view-mode";
 const languageStorageKey = "simple-week-planner-language";
 const backgroundStorageKey = "simple-week-planner-background";
-const appVersion = "1.5.0";
+const appVersion = "1.6.1";
 const webAppUrl = "https://flashpop7.github.io/Weekly_Planner/";
 const versionInfoUrl = "version.json";
 const githubIssuesUrl = "https://github.com/flashpop7/Weekly_Planner/issues/new/choose";
@@ -62,15 +62,18 @@ const translations = {
     date: "日期",
     weekday: "星期",
     time: "时间",
-    planContent: "计划内容",
+    planContent: "任务模块",
+    progress: "进度",
     endTime: "结束时间",
     repeatUntil: "持续到",
     category: "任务属性",
     categoryShort: "属性",
     planPlaceholder: "例如：复习数学、完成项目、健身训练",
-    subtasks: "小任务拆分",
-    subtaskPlaceholder: "每行写一个小任务，例如：阅读资料",
-    subtaskHint: "每行一个小任务。留空时，任务只有 0% 和 100% 两种进度。",
+    subtasks: "小任务",
+    subtaskPlaceholder: "小任务名称",
+    subtaskHint: "点击“添加小任务”自定义拆分数量和名称。没有小任务时，任务模块只有 0% 和 100% 两种进度。",
+    addSubtask: "添加小任务",
+    removeSubtask: "删除小任务",
     delete: "删除",
     savePlan: "保存计划",
     close: "关闭",
@@ -179,15 +182,18 @@ const translations = {
     date: "Date",
     weekday: "Day",
     time: "Time",
-    planContent: "Plan",
+    planContent: "Task Module",
+    progress: "Progress",
     endTime: "End time",
     repeatUntil: "Repeat until",
     category: "Category",
     categoryShort: "Category",
     planPlaceholder: "For example: review math, finish a project, work out",
     subtasks: "Subtasks",
-    subtaskPlaceholder: "Write one subtask per line, for example: read notes",
-    subtaskHint: "One subtask per line. Leave it empty for simple 0% / 100% progress.",
+    subtaskPlaceholder: "Subtask name",
+    subtaskHint: "Use Add Subtask to choose how many subtasks this module has. Without subtasks, progress is 0% or 100%.",
+    addSubtask: "Add Subtask",
+    removeSubtask: "Remove Subtask",
     delete: "Delete",
     savePlan: "Save Plan",
     close: "Close",
@@ -350,7 +356,9 @@ const weekRange = document.querySelector("#weekRange");
 const todayBtn = document.querySelector("#todayBtn");
 const planDialog = document.querySelector("#planDialog");
 const planText = document.querySelector("#planText");
-const subtaskText = document.querySelector("#subtaskText");
+const subtaskEditor = document.querySelector("#subtaskEditor");
+const addSubtask = document.querySelector("#addSubtask");
+const startTimeInput = document.querySelector("#startTimeInput");
 const endTime = document.querySelector("#endTime");
 const repeatUntil = document.querySelector("#repeatUntil");
 const planCategory = document.querySelector("#planCategory");
@@ -401,6 +409,8 @@ let activeKey = "";
 let activeDateKey = "";
 let activeSlot = "";
 let activeSlotIndex = 0;
+let activeStartMinutes = 420;
+let activeEndMinutes = 480;
 let activePlansBefore = null;
 let pendingCarryovers = [];
 let pendingMoodKey = "";
@@ -444,6 +454,31 @@ function todayKey() {
 
 function toDateKey(date) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+function timeToMinutes(time) {
+  const [hours, minutes] = String(time || "00:00").split(":").map(Number);
+  return Math.max(0, Math.min(1440, (hours || 0) * 60 + (minutes || 0)));
+}
+
+function minutesToTime(minutes) {
+  const bounded = Math.max(0, Math.min(1440, Number(minutes) || 0));
+  const hours = Math.floor(bounded / 60);
+  const mins = bounded % 60;
+  return `${pad(hours)}:${pad(mins)}`;
+}
+
+function minutesToInputTime(minutes) {
+  return minutes >= 1440 ? "23:59" : minutesToTime(minutes);
+}
+
+function parseTimeRange(range) {
+  const [start = "07:00", end = "08:00"] = String(range || "").split("-");
+  return { start, end };
+}
+
+function makeTimeRange(start, end) {
+  return `${start}-${end}`;
 }
 
 function fromDateKey(dateKey) {
@@ -515,6 +550,14 @@ function normalizePlans(savedPlans) {
   return Object.fromEntries(
     Object.entries(savedPlans).map(([key, plan]) => {
       const [dateKey, slot] = key.split("|");
+      const range = parseTimeRange(slot);
+      const oldStartIndex = slots.indexOf(slot);
+      const inferredStart = plan.startTime || range.start;
+      const inferredEnd =
+        plan.endTime ||
+        (oldStartIndex >= 0
+          ? getSlotEnd(slots[Math.min(slots.length - 1, oldStartIndex + (Number(plan.span) || 1) - 1)])
+          : range.end);
       const subtasks = Array.isArray(plan.subtasks)
         ? plan.subtasks
             .filter((item) => item && String(item.text || "").trim())
@@ -527,11 +570,13 @@ function normalizePlans(savedPlans) {
       return [
         key,
         {
-          id: plan.id || `${dateKey}-${slot}-${Math.random().toString(36).slice(2, 8)}`,
-          text: plan.text || "",
+            id: plan.id || `${dateKey}-${slot}-${Math.random().toString(36).slice(2, 8)}`,
+            text: plan.text || "",
             done: subtasks.length ? subtasks.every((item) => item.done) : Boolean(plan.done),
-          span: Math.max(1, Number(plan.span) || 1),
-          category: plan.category || "study",
+            span: Math.max(1, Number(plan.span) || 1),
+            startTime: inferredStart,
+            endTime: inferredEnd,
+            category: plan.category || "study",
           dueDate: plan.dueDate || dateKey,
           createdDate: plan.createdDate || dateKey,
           mood: plan.mood || "",
@@ -565,24 +610,39 @@ function syncPlanDone(plan) {
   plan.done = getPlanProgress(plan) === 100;
 }
 
-function parseSubtasks(text, existing = []) {
-  const existingByText = new Map(existing.map((item) => [item.text, item]));
-  return text
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line, index) => {
-      const previous = existingByText.get(line);
-      return {
-        id: previous?.id || `subtask-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 7)}`,
-        text: line,
-        done: Boolean(previous?.done),
-      };
-    });
+function createSubtaskInputRow(subtask = {}) {
+  const row = document.createElement("div");
+  row.className = "subtask-edit-row";
+  row.dataset.id = subtask.id || `subtask-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  row.dataset.done = String(Boolean(subtask.done));
+  row.innerHTML = `
+    <input type="text" value="${escapeHtml(subtask.text || "")}" placeholder="${t("subtaskPlaceholder")}">
+    <button class="icon-button compact-icon" type="button" title="${t("removeSubtask")}" aria-label="${t("removeSubtask")}">×</button>
+  `;
+  row.querySelector("button").addEventListener("click", () => {
+    row.remove();
+  });
+  return row;
 }
 
-function getSubtaskText(plan) {
-  return plan?.subtasks?.map((item) => item.text).join("\n") || "";
+function renderSubtaskEditor(subtasks = []) {
+  subtaskEditor.innerHTML = "";
+  subtasks.forEach((subtask) => {
+    subtaskEditor.appendChild(createSubtaskInputRow(subtask));
+  });
+}
+
+function collectSubtasksFromEditor() {
+  return Array.from(subtaskEditor.querySelectorAll(".subtask-edit-row"))
+    .map((row) => {
+      const text = row.querySelector("input").value.trim();
+      return {
+        id: row.dataset.id,
+        text,
+        done: row.dataset.done === "true",
+      };
+    })
+    .filter((item) => item.text);
 }
 
 function loadBackgroundSettings() {
@@ -627,6 +687,17 @@ function renderBackgroundControls() {
     });
     themeSwatches.appendChild(button);
   });
+}
+
+function openBackgroundDialog() {
+  closeToolMenu();
+  renderBackgroundControls();
+  backgroundDialog.returnValue = "";
+  try {
+    backgroundDialog.showModal();
+  } catch (error) {
+    showCheer(t("backgroundTitle"));
+  }
 }
 
 function loadHistory() {
@@ -741,50 +812,94 @@ function getSlotStart(slot) {
 }
 
 function getTimeRange(slot, span = 1) {
+  if (!slots.includes(slot)) {
+    return slot;
+  }
   const startIndex = slots.indexOf(slot);
   const endIndex = Math.min(slots.length - 1, startIndex + span - 1);
   return `${getSlotStart(slot)}-${getSlotEnd(slots[endIndex])}`;
 }
 
-function getDurationHours(span = 1) {
-  return Math.max(1, Number(span) || 1);
+function getPlanStartMinutes(planOrEntry) {
+  return timeToMinutes(planOrEntry.startTime || parseTimeRange(planOrEntry.slot).start);
 }
 
-function getPlanAt(dateKey, slotIndex) {
-  const slot = slots[slotIndex];
-  const directKey = makeKey(dateKey, slot);
-
-  if (plans[directKey]) {
-    return { key: directKey, slotIndex, plan: plans[directKey], isStart: true };
-  }
-
-  for (let index = 0; index < slotIndex; index += 1) {
-    const key = makeKey(dateKey, slots[index]);
-    const plan = plans[key];
-    if (plan && index + plan.span > slotIndex) {
-      return { key, slotIndex: index, plan, isStart: false };
-    }
-  }
-
-  return null;
+function getPlanEndMinutes(planOrEntry) {
+  return timeToMinutes(planOrEntry.endTime || parseTimeRange(planOrEntry.slot).end);
 }
 
-function removePlansInRange(dateKey, startIndex, span, keepKey = "") {
-  const endIndex = startIndex + span - 1;
+function getPlanTimeRange(planOrEntry) {
+  return makeTimeRange(minutesToTime(getPlanStartMinutes(planOrEntry)), minutesToTime(getPlanEndMinutes(planOrEntry)));
+}
+
+function getDurationHours(spanOrEntry = 1) {
+  if (typeof spanOrEntry === "object") {
+    const minutes = Math.max(5, getPlanEndMinutes(spanOrEntry) - getPlanStartMinutes(spanOrEntry));
+    return Math.round((minutes / 60) * 10) / 10;
+  }
+
+  return Math.max(1, Number(spanOrEntry) || 1);
+}
+
+function getPlansForDate(dateKey) {
+  return Object.entries(plans)
+    .filter(([key]) => key.split("|")[0] === dateKey)
+    .map(([key, plan]) => ({ key, plan }))
+    .sort((a, b) => getPlanStartMinutes(a.plan) - getPlanStartMinutes(b.plan));
+}
+
+function getTimelineSegments(dates) {
+  const boundaries = new Set([420, 1440]);
+  dates.forEach((date) => {
+    getPlansForDate(toDateKey(date)).forEach(({ plan }) => {
+      boundaries.add(getPlanStartMinutes(plan));
+      boundaries.add(getPlanEndMinutes(plan));
+    });
+  });
+
+  const sorted = Array.from(boundaries).sort((a, b) => a - b);
+  return sorted.slice(0, -1).map((start, index) => ({ start, end: sorted[index + 1] })).filter((segment) => segment.end > segment.start);
+}
+
+function getPlanAtSegment(dateKey, segment) {
+  const matching = getPlansForDate(dateKey).find(({ plan }) => {
+    const planStart = getPlanStartMinutes(plan);
+    const planEnd = getPlanEndMinutes(plan);
+    return planStart < segment.end && planEnd > segment.start;
+  });
+
+  if (!matching) {
+    return null;
+  }
+
+  const planStart = getPlanStartMinutes(matching.plan);
+  return {
+    ...matching,
+    isStart: planStart === segment.start,
+  };
+}
+
+function getSegmentSpan(segments, plan) {
+  const planStart = getPlanStartMinutes(plan);
+  const planEnd = getPlanEndMinutes(plan);
+  return segments.filter((segment) => segment.start >= planStart && segment.end <= planEnd).length || 1;
+}
+
+function removePlansInRange(dateKey, startMinutes, endMinutes, keepKey = "") {
 
   Object.keys(plans).forEach((key) => {
     if (key === keepKey) {
       return;
     }
 
-    const [planDateKey, slot] = key.split("|");
+    const [planDateKey] = key.split("|");
     if (planDateKey !== dateKey) {
       return;
     }
 
-    const planStart = slots.indexOf(slot);
-    const planEnd = planStart + (plans[key].span || 1) - 1;
-    if (planStart <= endIndex && planEnd >= startIndex) {
+    const planStart = getPlanStartMinutes(plans[key]);
+    const planEnd = getPlanEndMinutes(plans[key]);
+    if (planStart < endMinutes && planEnd > startMinutes) {
       delete plans[key];
     }
   });
@@ -865,6 +980,7 @@ function getRelativeDayLabel() {
 
 function renderGrid() {
   const dates = getVisibleDates();
+  const segments = getTimelineSegments(dates);
   scheduleGrid.innerHTML = "";
   scheduleGrid.appendChild(createCell(t("timeHeader"), "corner-cell", 1, 1));
 
@@ -874,25 +990,29 @@ function renderGrid() {
     scheduleGrid.appendChild(cell);
   });
 
-  slots.forEach((slot, slotIndex) => {
-    scheduleGrid.appendChild(createCell(slot, "time-cell", 1, slotIndex + 2));
+  segments.forEach((segment, segmentIndex) => {
+    const timeCell = createCell(makeTimeRange(minutesToTime(segment.start), minutesToTime(segment.end)), "time-cell", 1, segmentIndex + 2);
+    timeCell.style.minHeight = `${Math.max(42, Math.min(160, (segment.end - segment.start) * 0.9))}px`;
+    scheduleGrid.appendChild(timeCell);
   });
 
   dates.forEach((date, dayIndex) => {
     const dateKey = toDateKey(date);
 
-    slots.forEach((slot, slotIndex) => {
-      const coveredPlan = getPlanAt(dateKey, slotIndex);
+    segments.forEach((segment, segmentIndex) => {
+      const coveredPlan = getPlanAtSegment(dateKey, segment);
       if (coveredPlan && !coveredPlan.isStart) {
         return;
       }
 
-      const key = makeKey(dateKey, slot);
+      const slot = makeTimeRange(minutesToTime(segment.start), minutesToTime(segment.end));
+      const key = coveredPlan?.key || makeKey(dateKey, slot);
       const plan = coveredPlan?.plan;
       const category = getCategory(plan?.category);
       const progress = getPlanProgress(plan);
-      const span = Math.min(plan?.span || 1, slots.length - slotIndex);
-      const cell = createCell("", "plan-cell", dayIndex + 2, slotIndex + 2, span);
+      const span = plan ? getSegmentSpan(segments, plan) : 1;
+      const cell = createCell("", "plan-cell", dayIndex + 2, segmentIndex + 2, span);
+      cell.style.minHeight = `${Math.max(42, Math.min(160, (segment.end - segment.start) * 0.9))}px`;
       const button = document.createElement("button");
       button.type = "button";
       button.className = `plan-button${plan ? " has-plan" : ""}${plan?.done ? " is-done" : ""}`;
@@ -901,7 +1021,8 @@ function renderGrid() {
       button.dataset.date = dateKey;
       button.dataset.weekday = getWeekday(date);
       button.dataset.slot = slot;
-      button.dataset.slotIndex = String(slotIndex);
+      button.dataset.start = String(segment.start);
+      button.dataset.end = String(segment.end);
       button.innerHTML = plan
         ? `<span class="plan-meta">${category.icon} ${category.label} · ${progress}%${plan.mood ? ` · ${escapeHtml(getMoodLabel(plan.mood))}` : ""}</span><span class="plan-title">${escapeHtml(plan.text)}</span>`
         : `<span class="plan-title">${t("addPlan")}</span>`;
@@ -989,7 +1110,7 @@ function renderTaskModules() {
         <p class="module-title">${escapeHtml(entry.text)}</p>
         <span class="module-percent">${progress}%</span>
       </div>
-      <div class="module-meta">${escapeHtml(entry.dateKey)} · ${escapeHtml(getTimeRange(entry.slot, entry.span))} · ${category.icon} ${category.label}</div>
+      <div class="module-meta">${escapeHtml(entry.dateKey)} · ${escapeHtml(getPlanTimeRange(entry))} · ${category.icon} ${category.label}</div>
       <div class="module-track"><div class="module-bar" style="--progress-width:${progress}%"></div></div>
       <div class="module-meta">${escapeHtml(subtaskDetail)}</div>
       <div class="subtask-list"></div>
@@ -1071,39 +1192,31 @@ function createCell(text, className, column, row, rowSpan = 1) {
 
 function openPlanDialog(event) {
   const button = event.currentTarget;
-  const clickedSlotIndex = Number(button.dataset.slotIndex);
-  const coveredPlan = getPlanAt(button.dataset.date, clickedSlotIndex);
+  const segment = { start: Number(button.dataset.start), end: Number(button.dataset.end) };
+  const coveredPlan = getPlanAtSegment(button.dataset.date, segment);
   activePlansBefore = clonePlans();
 
   activeKey = coveredPlan?.key || button.dataset.key;
   activeDateKey = button.dataset.date;
-  activeSlot = slots[coveredPlan?.slotIndex ?? clickedSlotIndex];
-  activeSlotIndex = coveredPlan?.slotIndex ?? clickedSlotIndex;
+  activeStartMinutes = coveredPlan?.plan ? getPlanStartMinutes(coveredPlan.plan) : segment.start;
+  activeEndMinutes = coveredPlan?.plan ? getPlanEndMinutes(coveredPlan.plan) : segment.end;
+  activeSlot = makeTimeRange(minutesToTime(activeStartMinutes), minutesToTime(activeEndMinutes));
+  activeSlotIndex = 0;
 
   const plan = plans[activeKey];
   dialogDate.textContent = `${button.dataset.date} ${button.dataset.weekday}`;
-  dialogTime.textContent = getTimeRange(activeSlot, plan?.span || 1);
+  dialogTime.textContent = activeSlot;
+  startTimeInput.value = minutesToInputTime(activeStartMinutes);
+  endTime.value = minutesToInputTime(activeEndMinutes);
   planText.value = plan?.text || "";
-  subtaskText.value = getSubtaskText(plan);
+  renderSubtaskEditor(plan?.subtasks || []);
   repeatUntil.min = activeDateKey;
   repeatUntil.value = plan?.dueDate && plan.dueDate >= activeDateKey ? plan.dueDate : activeDateKey;
   planCategory.value = plan?.category || "study";
   deletePlan.hidden = !plan;
-  renderEndTimeOptions(plan?.span || 1);
   planDialog.returnValue = "";
   planDialog.showModal();
   planText.focus();
-}
-
-function renderEndTimeOptions(currentSpan) {
-  endTime.innerHTML = "";
-  slots.slice(activeSlotIndex).forEach((slot, offset) => {
-    const option = document.createElement("option");
-    option.value = String(offset + 1);
-    option.textContent = getSlotEnd(slot);
-    option.selected = offset + 1 === currentSpan;
-    endTime.appendChild(option);
-  });
 }
 
 function renderCategoryOptions() {
@@ -1128,17 +1241,31 @@ function renderSummary() {
     const progress = getPlanProgress(entry);
     const row = document.createElement("tr");
     row.className = progress === 100 ? "done-row" : "";
+    const subtaskList = entry.subtasks?.length
+      ? `<ul class="summary-subtasks">${entry.subtasks
+          .map((subtask) => `<li class="${subtask.done ? "is-done" : ""}">${escapeHtml(subtask.text)}</li>`)
+          .join("")}</ul>`
+      : `<p class="summary-subtasks-note">${t("noSubtasks")}</p>`;
     row.innerHTML = `
       <td><input type="checkbox" ${progress === 100 ? "checked" : ""} aria-label="${t("markDone")}"></td>
-      <td>${escapeHtml(entry.dateKey)}</td>
       <td>${escapeHtml(entry.weekday)}</td>
-      <td>${escapeHtml(getTimeRange(entry.slot, entry.span))}</td>
+      <td>${escapeHtml(getPlanTimeRange(entry))}</td>
       <td>
-        <span class="pill" style="--category-color:${category.color}; border:1px solid ${category.color};">${category.icon} ${category.label}</span>
-        <span class="pill">${progress}%</span>
-        ${entry.dueDate && entry.dueDate > entry.dateKey ? `<span class="pill">${t("continueUntil", { date: escapeHtml(entry.dueDate) })}</span>` : ""}
-        ${entry.mood ? `<span class="pill">${escapeHtml(getMoodLabel(entry.mood))}</span>` : ""}
-        <div>${escapeHtml(entry.text)}</div>
+        <details class="summary-module">
+          <summary>
+            <span class="summary-module-title">${escapeHtml(entry.text)}</span>
+            <span class="pill" style="--category-color:${category.color}; border:1px solid ${category.color};">${category.icon} ${category.label}</span>
+          </summary>
+          <div class="summary-module-detail">
+            ${entry.dueDate && entry.dueDate > entry.dateKey ? `<span class="pill">${t("continueUntil", { date: escapeHtml(entry.dueDate) })}</span>` : ""}
+            ${entry.mood ? `<span class="pill">${escapeHtml(getMoodLabel(entry.mood))}</span>` : ""}
+            ${subtaskList}
+          </div>
+        </details>
+      </td>
+      <td>
+        <strong>${progress}%</strong>
+        <div class="summary-progress-track"><div style="--progress-width:${progress}%"></div></div>
       </td>
     `;
     row.querySelector("input").addEventListener("change", (event) => {
@@ -1199,21 +1326,25 @@ function openMoodDialog(key) {
   moodDialog.showModal();
 }
 
-function createPlanCopies(text, span, category, dueDate, subtasks) {
+function createPlanCopies(text, startTime, endTimeValue, category, dueDate, subtasks) {
   const startDate = fromDateKey(activeDateKey);
   const endDate = fromDateKey(dueDate);
   const copies = [];
+  const startMinutes = timeToMinutes(startTime);
+  const endMinutes = timeToMinutes(endTimeValue);
+  const timeRange = makeTimeRange(startTime, endTimeValue);
 
   for (let date = new Date(startDate); date <= endDate; date = addDays(date, 1)) {
     const dateKey = toDateKey(date);
-    const key = makeKey(dateKey, activeSlot);
-    const startIndex = activeSlotIndex;
-    removePlansInRange(dateKey, startIndex, span, key);
+    const key = makeKey(dateKey, timeRange);
+    removePlansInRange(dateKey, startMinutes, endMinutes, key);
     plans[key] = {
-      id: plans[key]?.id || `${dateKey}-${activeSlot}-${Date.now()}`,
+      id: plans[key]?.id || `${dateKey}-${timeRange}-${Date.now()}`,
       text,
       done: subtasks.length ? subtasks.every((item) => item.done) : plans[key]?.done || false,
-      span,
+      span: Math.max(1, Math.ceil((endMinutes - startMinutes) / 60)),
+      startTime,
+      endTime: endTimeValue,
       category,
       dueDate,
       createdDate: activeDateKey,
@@ -1222,7 +1353,7 @@ function createPlanCopies(text, span, category, dueDate, subtasks) {
       carriedFrom: plans[key]?.carriedFrom || "",
       subtasks: subtasks.map((item, index) => ({
         ...item,
-        id: `${dateKey}-${activeSlot}-${item.id || index}`,
+        id: `${dateKey}-${timeRange}-${item.id || index}`,
       })),
     };
     copies.push(key);
@@ -1252,7 +1383,7 @@ function checkCarryovers() {
     item.style.setProperty("--category-color", category.color);
     item.innerHTML = `
       <strong>${escapeHtml(entry.text)}</strong>
-      <small>${escapeHtml(entry.dateKey)} · ${escapeHtml(getTimeRange(entry.slot, entry.span))} · ${category.icon} ${category.label}</small>
+      <small>${escapeHtml(entry.dateKey)} · ${escapeHtml(getPlanTimeRange(entry))} · ${category.icon} ${category.label}</small>
     `;
     carryoverList.appendChild(item);
   });
@@ -1275,40 +1406,24 @@ function renderRescheduleDialog() {
     item.dataset.oldKey = entry.key;
     item.innerHTML = `
       <strong>${escapeHtml(entry.text)}</strong>
-      <small>${t("originalTime")}${escapeHtml(entry.dateKey)} · ${escapeHtml(getTimeRange(entry.slot, entry.span))}</small>
+      <small>${t("originalTime")}${escapeHtml(entry.dateKey)} · ${escapeHtml(getPlanTimeRange(entry))}</small>
       <div class="reschedule-row">
         <label>${t("newDate")}
           <input class="carry-date" type="date" value="${today}" min="${today}">
         </label>
         <label>${t("startTime")}
-          <select class="carry-start">${slots.map((slot) => `<option value="${slot}" ${slot === entry.slot ? "selected" : ""}>${slot}</option>`).join("")}</select>
+          <input class="carry-start" type="time" step="300" value="${escapeHtml(entry.startTime || parseTimeRange(entry.slot).start)}">
         </label>
         <label>${t("endTime")}
-          <select class="carry-span" data-span="${entry.span}"></select>
+          <input class="carry-end" type="time" step="300" value="${escapeHtml(entry.endTime || parseTimeRange(entry.slot).end)}">
         </label>
       </div>
     `;
     rescheduleList.appendChild(item);
-    const startSelect = item.querySelector(".carry-start");
-    const spanSelect = item.querySelector(".carry-span");
-    const refreshSpan = () => renderSpanSelect(spanSelect, slots.indexOf(startSelect.value), Number(spanSelect.dataset.span) || entry.span);
-    startSelect.addEventListener("change", refreshSpan);
-    refreshSpan();
     item.dataset.index = String(index);
   });
 
   rescheduleDialog.showModal();
-}
-
-function renderSpanSelect(select, startIndex, selectedSpan = 1) {
-  select.innerHTML = "";
-  slots.slice(startIndex).forEach((slot, offset) => {
-    const option = document.createElement("option");
-    option.value = String(offset + 1);
-    option.textContent = getSlotEnd(slot);
-    option.selected = offset + 1 === selectedSpan;
-    select.appendChild(option);
-  });
 }
 
 function saveCarryoverReschedules() {
@@ -1323,17 +1438,22 @@ function saveCarryoverReschedules() {
     }
 
     const dateKey = item.querySelector(".carry-date").value;
-    const slot = item.querySelector(".carry-start").value;
-    const span = Number(item.querySelector(".carry-span").value) || 1;
-    const startIndex = slots.indexOf(slot);
-    const newKey = makeKey(dateKey, slot);
-    removePlansInRange(dateKey, startIndex, span, oldKey);
+    const startTime = item.querySelector(".carry-start").value || oldPlan.startTime || parseTimeRange(oldKey.split("|")[1]).start;
+    const endTimeValue = item.querySelector(".carry-end").value || oldPlan.endTime || parseTimeRange(oldKey.split("|")[1]).end;
+    const startMinutes = timeToMinutes(startTime);
+    const endMinutes = Math.max(startMinutes + 5, timeToMinutes(endTimeValue));
+    const normalizedEndTime = minutesToTime(endMinutes);
+    const timeRange = makeTimeRange(startTime, normalizedEndTime);
+    const newKey = makeKey(dateKey, timeRange);
+    removePlansInRange(dateKey, startMinutes, endMinutes, oldKey);
     delete plans[oldKey];
     plans[newKey] = {
       ...oldPlan,
       done: false,
       mood: "",
-      span,
+      span: Math.max(1, Math.ceil((endMinutes - startMinutes) / 60)),
+      startTime,
+      endTime: normalizedEndTime,
       dueDate: dateKey,
       carriedCount: (oldPlan.carriedCount || 0) + 1,
       carriedFrom: oldKey.split("|")[0],
@@ -1392,17 +1512,17 @@ function renderWeeklySummary() {
   const completed = entries.filter((entry) => getPlanProgress(entry) === 100);
   const carried = entries.filter((entry) => entry.carriedCount > 0 || (getPlanProgress(entry) < 100 && entry.dateKey < todayKey()));
   const carriedRatio = carried.length / entries.length;
-  const totalHours = entries.reduce((sum, entry) => sum + getDurationHours(entry.span), 0);
+  const totalHours = Math.round(entries.reduce((sum, entry) => sum + getDurationHours(entry), 0) * 10) / 10;
   const categoryHours = {};
 
   entries.forEach((entry) => {
-    categoryHours[entry.category] = (categoryHours[entry.category] || 0) + getDurationHours(entry.span);
+    categoryHours[entry.category] = (categoryHours[entry.category] || 0) + getDurationHours(entry);
     const category = getCategory(entry.category);
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${escapeHtml(entry.text)}</td>
       <td><span class="pill" style="border:1px solid ${category.color};">${category.icon} ${category.label}</span></td>
-      <td>${getDurationHours(entry.span)} ${t("hour")}</td>
+      <td>${getDurationHours(entry)} ${t("hour")}</td>
       <td>${entry.mood ? escapeHtml(getMoodLabel(entry.mood)) : t("unrecorded")}</td>
     `;
     weeklyBody.appendChild(row);
@@ -1517,10 +1637,13 @@ feedbackChoiceDialog.addEventListener("close", () => {
 });
 
 backgroundBtn.addEventListener("click", () => {
-  closeToolMenu();
-  renderBackgroundControls();
-  backgroundDialog.returnValue = "";
-  backgroundDialog.showModal();
+  openBackgroundDialog();
+});
+
+addSubtask.addEventListener("click", () => {
+  subtaskEditor.appendChild(createSubtaskInputRow());
+  const input = subtaskEditor.querySelector(".subtask-edit-row:last-child input");
+  input.focus();
 });
 
 backgroundImageInput.addEventListener("change", () => {
@@ -1600,17 +1723,20 @@ clearWeekDialog.addEventListener("close", () => {
 planDialog.addEventListener("close", () => {
   const action = planDialog.returnValue;
   const text = planText.value.trim();
-  const span = Number(endTime.value) || 1;
+  const startValue = startTimeInput.value || minutesToTime(activeStartMinutes);
+  const endValue = endTime.value || minutesToTime(activeEndMinutes);
+  const startMinutes = timeToMinutes(startValue);
+  const endMinutes = timeToMinutes(endValue);
   const category = planCategory.value || "study";
   const dueDate = repeatUntil.value || activeDateKey;
-  const subtasks = parseSubtasks(subtaskText.value, plans[activeKey]?.subtasks || []);
+  const subtasks = collectSubtasksFromEditor();
   const before = activePlansBefore || clonePlans();
 
-  if (action === "save" && text) {
+    if (action === "save" && text && endMinutes > startMinutes) {
       if (plans[activeKey]) {
         delete plans[activeKey];
       }
-      createPlanCopies(text, span, category, dueDate, subtasks);
+      createPlanCopies(text, startValue, endValue, category, dueDate, subtasks);
     }
 
   if (action === "save" && !text) {
@@ -1625,6 +1751,8 @@ planDialog.addEventListener("close", () => {
   activeDateKey = "";
   activeSlot = "";
   activeSlotIndex = 0;
+  activeStartMinutes = 420;
+  activeEndMinutes = 480;
   activePlansBefore = null;
   commitPlanChange(before);
 });

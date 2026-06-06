@@ -1,5 +1,5 @@
 {
-  "version": "1.5.0",
+  "version": "1.6.1",
   "apkUrl": "",
-  "notes": "Adds progress visualization, subtasks, task modules, and local background customization."
+  "notes": "Removes the date column from Summary and tightens the summary layout."
 }

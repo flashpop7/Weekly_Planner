@@ -88,10 +88,10 @@
             <thead>
               <tr>
                 <th scope="col" data-i18n="done">完成</th>
-                <th scope="col" data-i18n="date">日期</th>
                 <th scope="col" data-i18n="weekday">星期</th>
                 <th scope="col" data-i18n="time">时间</th>
-                <th scope="col" data-i18n="planContent">计划内容</th>
+                <th scope="col" data-i18n="planContent">任务模块</th>
+                <th scope="col" data-i18n="progress">进度</th>
               </tr>
             </thead>
             <tbody id="summaryBody"></tbody>
@@ -111,10 +111,17 @@
           <button class="icon-button" value="cancel" type="submit" aria-label="关闭" data-i18n-aria="close">×</button>
         </div>
 
-        <label class="plan-field">
-          <span data-i18n="endTime">结束时间</span>
-          <select id="endTime"></select>
-        </label>
+        <div class="time-fields">
+          <label class="plan-field">
+            <span data-i18n="startTime">开始时间</span>
+            <input id="startTimeInput" type="time" step="300" />
+          </label>
+
+          <label class="plan-field">
+            <span data-i18n="endTime">结束时间</span>
+            <input id="endTime" type="time" step="300" />
+          </label>
+        </div>
 
         <label class="plan-field">
           <span data-i18n="repeatUntil">持续到</span>
@@ -127,15 +134,16 @@
         </label>
 
         <label class="plan-field">
-          <span data-i18n="planContent">计划内容</span>
+          <span data-i18n="planContent">任务模块</span>
           <textarea id="planText" rows="4" placeholder="例如：复习数学、完成项目、健身训练" data-i18n-placeholder="planPlaceholder"></textarea>
         </label>
 
-        <label class="plan-field">
-          <span data-i18n="subtasks">小任务拆分</span>
-          <textarea id="subtaskText" rows="4" placeholder="每行写一个小任务，例如：阅读资料" data-i18n-placeholder="subtaskPlaceholder"></textarea>
+        <div class="plan-field">
+          <span data-i18n="subtasks">小任务</span>
+          <div class="subtask-editor" id="subtaskEditor"></div>
+          <button class="clear-button add-subtask-button" id="addSubtask" type="button" data-i18n="addSubtask">添加小任务</button>
           <small class="field-hint" data-i18n="subtaskHint">每行一个小任务。留空时，任务只有 0% 和 100% 两种进度。</small>
-        </label>
+        </div>
         <div class="dialog-actions">
           <button class="delete-button" id="deletePlan" value="delete" type="submit" data-i18n="delete">删除</button>
           <button class="save-button" id="savePlan" value="save" type="submit" data-i18n="savePlan">保存计划</button>
