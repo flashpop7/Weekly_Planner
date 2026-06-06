@@ -1,5 +1,5 @@
 {
-  "version": "1.4.0",
+  "version": "1.5.0",
   "apkUrl": "",
-  "notes": "Initial web version. APK download URL is not configured yet."
+  "notes": "Adds progress visualization, subtasks, task modules, and local background customization."
 }

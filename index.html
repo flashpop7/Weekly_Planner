@@ -41,6 +41,7 @@
               <div class="tool-menu-panel">
                 <button class="menu-button" id="updateBtn" type="button" data-i18n="update">更新</button>
                 <button class="menu-button" id="feedbackBtn" type="button" data-i18n="feedback">反馈</button>
+                <button class="menu-button" id="backgroundBtn" type="button" data-i18n="background">背景</button>
                 <button class="menu-button" id="langToggle" type="button">EN</button>
               </div>
             </details>
@@ -60,6 +61,15 @@
         <div class="schedule-wrap" aria-label="课程表式计划安排" data-i18n-aria="schedule">
           <div class="schedule-grid" id="scheduleGrid"></div>
         </div>
+      </section>
+
+      <section class="progress-band">
+        <div class="progress-head">
+          <h2 data-i18n="progressTitle">Progress</h2>
+        </div>
+        <div class="progress-stats" id="progressStats"></div>
+        <div class="module-grid" id="taskModules"></div>
+        <p class="empty-state" id="moduleEmpty" data-i18n="moduleEmpty">当前范围还没有任务模块。</p>
       </section>
 
       <section class="summary-band">
@@ -119,6 +129,12 @@
         <label class="plan-field">
           <span data-i18n="planContent">计划内容</span>
           <textarea id="planText" rows="4" placeholder="例如：复习数学、完成项目、健身训练" data-i18n-placeholder="planPlaceholder"></textarea>
+        </label>
+
+        <label class="plan-field">
+          <span data-i18n="subtasks">小任务拆分</span>
+          <textarea id="subtaskText" rows="4" placeholder="每行写一个小任务，例如：阅读资料" data-i18n-placeholder="subtaskPlaceholder"></textarea>
+          <small class="field-hint" data-i18n="subtaskHint">每行一个小任务。留空时，任务只有 0% 和 100% 两种进度。</small>
         </label>
         <div class="dialog-actions">
           <button class="delete-button" id="deletePlan" value="delete" type="submit" data-i18n="delete">删除</button>
@@ -246,6 +262,28 @@
         <div class="feedback-choice-actions">
           <button class="clear-button" id="searchGithubRepo" value="search" type="submit" data-i18n="searchGithubRepo">搜索项目</button>
           <button class="save-button" id="openGithubIssues" value="issues" type="submit" data-i18n="openGithubIssues">打开 Issues</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="wide-dialog" id="backgroundDialog">
+      <form method="dialog">
+        <div class="dialog-head">
+          <div>
+            <p class="eyebrow">Theme</p>
+            <h3 data-i18n="backgroundTitle">背景设置</h3>
+          </div>
+          <button class="icon-button" value="cancel" type="submit" aria-label="关闭" data-i18n-aria="close">×</button>
+        </div>
+        <p class="dialog-note" data-i18n="backgroundNote">可以选择纯色背景，也可以从本机相册选择图片。图片只保存在当前浏览器里，不会上传。</p>
+        <div class="theme-swatches" id="themeSwatches"></div>
+        <label class="plan-field">
+          <span data-i18n="photoBackground">相册图片背景</span>
+          <input id="backgroundImageInput" type="file" accept="image/*" />
+        </label>
+        <div class="dialog-actions">
+          <button class="clear-button" id="clearBackgroundImage" value="clear" type="button" data-i18n="clearBackgroundImage">清除图片</button>
+          <button class="save-button" value="close" type="submit" data-i18n="saveBackground">完成</button>
         </div>
       </form>
     </dialog>

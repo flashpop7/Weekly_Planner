@@ -9,11 +9,15 @@ Weekly_Planner helps you arrange tasks by date and time block, switch between da
 - Day view and week view
 - Time blocks from `07:00` to `24:00`
 - Add, edit, delete, undo, and redo plans
+- Split a task into subtasks and track progress from 0% to 100%
+- Day, week, and month completion visualization
+- Task modules with per-task progress
 - Multi-hour tasks and repeated tasks
 - Task categories and mood records
 - Current-view summary table
 - Clear completed tasks or clear the current week
 - Chinese / English interface
+- Custom background colors or a local browser photo background
 - Feedback entry for suggestions and bug reports
 - Local browser storage with no account required
 

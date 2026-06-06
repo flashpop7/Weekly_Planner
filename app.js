@@ -9,13 +9,21 @@ const storageKey = "simple-week-planner";
 const historyStorageKey = "simple-week-planner-history";
 const viewModeStorageKey = "simple-week-planner-view-mode";
 const languageStorageKey = "simple-week-planner-language";
-const appVersion = "1.4.0";
+const backgroundStorageKey = "simple-week-planner-background";
+const appVersion = "1.5.0";
 const webAppUrl = "https://flashpop7.github.io/Weekly_Planner/";
 const versionInfoUrl = "version.json";
 const githubIssuesUrl = "https://github.com/flashpop7/Weekly_Planner/issues/new/choose";
 const githubSearchUrl = "https://github.com/search?q=flashpop7+Weekly_Planner&type=repositories";
 const weeklySeenKey = "simple-week-planner-weekly-seen";
 const carryoverSeenKey = "simple-week-planner-carryover-seen";
+const backgroundThemes = [
+  { value: "#f6f7f4", labels: { zh: "清爽", en: "Fresh" } },
+  { value: "#f4f0e8", labels: { zh: "暖白", en: "Warm" } },
+  { value: "#eaf2f8", labels: { zh: "浅蓝", en: "Blue" } },
+  { value: "#f3edf7", labels: { zh: "淡紫", en: "Lilac" } },
+  { value: "#edf5ec", labels: { zh: "薄荷", en: "Mint" } },
+];
 const translations = {
   zh: {
     appTitle: "Weekly_Planner",
@@ -26,6 +34,7 @@ const translations = {
     tools: "功能",
     update: "更新",
     feedback: "反馈",
+    background: "背景",
     undo: "撤销",
     redo: "恢复",
     langToggle: "EN",
@@ -59,6 +68,9 @@ const translations = {
     category: "任务属性",
     categoryShort: "属性",
     planPlaceholder: "例如：复习数学、完成项目、健身训练",
+    subtasks: "小任务拆分",
+    subtaskPlaceholder: "每行写一个小任务，例如：阅读资料",
+    subtaskHint: "每行一个小任务。留空时，任务只有 0% 和 100% 两种进度。",
     delete: "删除",
     savePlan: "保存计划",
     close: "关闭",
@@ -82,6 +94,21 @@ const translations = {
     feedbackChoiceNote: "请在 GitHub 搜索 flashpop7 和 Weekly_Planner，或直接打开项目 Issues 提交建议和 bug。Issues 是公开的，请不要填写隐私信息。",
     searchGithubRepo: "搜索项目",
     openGithubIssues: "打开 Issues",
+    progressTitle: "Progress",
+    moduleEmpty: "当前范围还没有任务模块。",
+    dayProgress: "今日",
+    weekProgress: "本周",
+    monthProgress: "本月",
+    progressDetail: "{done}/{total} 个任务完成",
+    subtaskProgressDetail: "{done}/{total} 个小任务完成",
+    noSubtasks: "未拆分小任务",
+    backgroundTitle: "背景设置",
+    backgroundNote: "可以选择纯色背景，也可以从本机相册选择图片。图片只保存在当前浏览器里，不会上传。",
+    photoBackground: "相册图片背景",
+    clearBackgroundImage: "清除图片",
+    saveBackground: "完成",
+    backgroundSaved: "背景已更新。",
+    imageTooLarge: "图片太大了，建议选择 2MB 以内的图片。",
     timeHeader: "时间",
     addPlan: "添加计划",
     markDone: "标记完成",
@@ -124,6 +151,7 @@ const translations = {
     tools: "Tools",
     update: "Update",
     feedback: "Feedback",
+    background: "Background",
     undo: "Undo",
     redo: "Redo",
     langToggle: "中文",
@@ -157,6 +185,9 @@ const translations = {
     category: "Category",
     categoryShort: "Category",
     planPlaceholder: "For example: review math, finish a project, work out",
+    subtasks: "Subtasks",
+    subtaskPlaceholder: "Write one subtask per line, for example: read notes",
+    subtaskHint: "One subtask per line. Leave it empty for simple 0% / 100% progress.",
     delete: "Delete",
     savePlan: "Save Plan",
     close: "Close",
@@ -180,6 +211,21 @@ const translations = {
     feedbackChoiceNote: "Search GitHub for flashpop7 and Weekly_Planner, or open the project Issues page to report bugs and suggestions. Issues are public, so do not include private information.",
     searchGithubRepo: "Search Project",
     openGithubIssues: "Open Issues",
+    progressTitle: "Progress",
+    moduleEmpty: "No task modules in this range yet.",
+    dayProgress: "Today",
+    weekProgress: "This Week",
+    monthProgress: "This Month",
+    progressDetail: "{done}/{total} task(s) done",
+    subtaskProgressDetail: "{done}/{total} subtask(s) done",
+    noSubtasks: "No subtasks",
+    backgroundTitle: "Background",
+    backgroundNote: "Choose a color background or select a photo from this device. The image stays in this browser and is not uploaded.",
+    photoBackground: "Photo background",
+    clearBackgroundImage: "Clear Photo",
+    saveBackground: "Done",
+    backgroundSaved: "Background updated.",
+    imageTooLarge: "That image is too large. Try an image under 2MB.",
     timeHeader: "Time",
     addPlan: "Add plan",
     markDone: "Mark as done",
@@ -304,6 +350,7 @@ const weekRange = document.querySelector("#weekRange");
 const todayBtn = document.querySelector("#todayBtn");
 const planDialog = document.querySelector("#planDialog");
 const planText = document.querySelector("#planText");
+const subtaskText = document.querySelector("#subtaskText");
 const endTime = document.querySelector("#endTime");
 const repeatUntil = document.querySelector("#repeatUntil");
 const planCategory = document.querySelector("#planCategory");
@@ -331,8 +378,16 @@ const clearWeekDialog = document.querySelector("#clearWeekDialog");
 const clearWeekMessage = document.querySelector("#clearWeekMessage");
 const dayViewBtn = document.querySelector("#dayViewBtn");
 const weekViewBtn = document.querySelector("#weekViewBtn");
+const progressStats = document.querySelector("#progressStats");
+const taskModules = document.querySelector("#taskModules");
+const moduleEmpty = document.querySelector("#moduleEmpty");
 const feedbackBtn = document.querySelector("#feedbackBtn");
 const feedbackChoiceDialog = document.querySelector("#feedbackChoiceDialog");
+const backgroundBtn = document.querySelector("#backgroundBtn");
+const backgroundDialog = document.querySelector("#backgroundDialog");
+const themeSwatches = document.querySelector("#themeSwatches");
+const backgroundImageInput = document.querySelector("#backgroundImageInput");
+const clearBackgroundImage = document.querySelector("#clearBackgroundImage");
 const langToggle = document.querySelector("#langToggle");
 const toolMenu = document.querySelector(".tool-menu");
 
@@ -341,6 +396,7 @@ let selectedDate = new Date();
 let weekStart = getMonday(selectedDate);
 let viewMode = localStorage.getItem(viewModeStorageKey) === "week" ? "week" : "day";
 let currentLang = localStorage.getItem(languageStorageKey) === "en" ? "en" : "zh";
+let backgroundSettings = loadBackgroundSettings();
 let activeKey = "";
 let activeDateKey = "";
 let activeSlot = "";
@@ -459,12 +515,21 @@ function normalizePlans(savedPlans) {
   return Object.fromEntries(
     Object.entries(savedPlans).map(([key, plan]) => {
       const [dateKey, slot] = key.split("|");
+      const subtasks = Array.isArray(plan.subtasks)
+        ? plan.subtasks
+            .filter((item) => item && String(item.text || "").trim())
+            .map((item, index) => ({
+              id: item.id || `${dateKey}-${slot}-subtask-${index}-${Math.random().toString(36).slice(2, 7)}`,
+              text: String(item.text || "").trim(),
+              done: Boolean(item.done),
+            }))
+        : [];
       return [
         key,
         {
           id: plan.id || `${dateKey}-${slot}-${Math.random().toString(36).slice(2, 8)}`,
           text: plan.text || "",
-          done: Boolean(plan.done),
+            done: subtasks.length ? subtasks.every((item) => item.done) : Boolean(plan.done),
           span: Math.max(1, Number(plan.span) || 1),
           category: plan.category || "study",
           dueDate: plan.dueDate || dateKey,
@@ -472,6 +537,7 @@ function normalizePlans(savedPlans) {
           mood: plan.mood || "",
           carriedCount: Number(plan.carriedCount) || 0,
           carriedFrom: plan.carriedFrom || "",
+          subtasks,
         },
       ];
     }),
@@ -480,6 +546,87 @@ function normalizePlans(savedPlans) {
 
 function savePlans() {
   localStorage.setItem(storageKey, JSON.stringify(plans));
+}
+
+function getPlanProgress(plan) {
+  if (!plan) {
+    return 0;
+  }
+
+  if (plan.subtasks?.length) {
+    const completed = plan.subtasks.filter((item) => item.done).length;
+    return Math.round((completed / plan.subtasks.length) * 100);
+  }
+
+  return plan.done ? 100 : 0;
+}
+
+function syncPlanDone(plan) {
+  plan.done = getPlanProgress(plan) === 100;
+}
+
+function parseSubtasks(text, existing = []) {
+  const existingByText = new Map(existing.map((item) => [item.text, item]));
+  return text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line, index) => {
+      const previous = existingByText.get(line);
+      return {
+        id: previous?.id || `subtask-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 7)}`,
+        text: line,
+        done: Boolean(previous?.done),
+      };
+    });
+}
+
+function getSubtaskText(plan) {
+  return plan?.subtasks?.map((item) => item.text).join("\n") || "";
+}
+
+function loadBackgroundSettings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(backgroundStorageKey) || "{}");
+    return {
+      color: saved.color || backgroundThemes[0].value,
+      image: saved.image || "",
+    };
+  } catch (error) {
+    return { color: backgroundThemes[0].value, image: "" };
+  }
+}
+
+function saveBackgroundSettings() {
+  localStorage.setItem(backgroundStorageKey, JSON.stringify(backgroundSettings));
+}
+
+function applyBackgroundSettings() {
+  document.documentElement.style.setProperty("--user-bg", backgroundSettings.color || backgroundThemes[0].value);
+  document.documentElement.style.setProperty(
+    "--user-bg-image",
+    backgroundSettings.image ? `url("${backgroundSettings.image}")` : "none",
+  );
+  document.body.classList.toggle("has-photo-bg", Boolean(backgroundSettings.image));
+}
+
+function renderBackgroundControls() {
+  themeSwatches.innerHTML = "";
+  backgroundThemes.forEach((theme) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `theme-swatch${theme.value === backgroundSettings.color ? " is-active" : ""}`;
+    button.style.setProperty("--swatch-color", theme.value);
+    button.textContent = theme.labels[currentLang] || theme.labels.zh;
+    button.addEventListener("click", () => {
+      backgroundSettings.color = theme.value;
+      saveBackgroundSettings();
+      applyBackgroundSettings();
+      renderBackgroundControls();
+      showCheer(t("backgroundSaved"));
+    });
+    themeSwatches.appendChild(button);
+  });
 }
 
 function loadHistory() {
@@ -645,10 +792,12 @@ function removePlansInRange(dateKey, startIndex, span, keepKey = "") {
 
 function render() {
   applyStaticTranslations();
+  applyBackgroundSettings();
   renderDailyQuote();
   renderHeader();
   renderViewMode();
   renderGrid();
+  renderProgress();
   renderSummary();
 }
 
@@ -741,6 +890,7 @@ function renderGrid() {
       const key = makeKey(dateKey, slot);
       const plan = coveredPlan?.plan;
       const category = getCategory(plan?.category);
+      const progress = getPlanProgress(plan);
       const span = Math.min(plan?.span || 1, slots.length - slotIndex);
       const cell = createCell("", "plan-cell", dayIndex + 2, slotIndex + 2, span);
       const button = document.createElement("button");
@@ -753,13 +903,161 @@ function renderGrid() {
       button.dataset.slot = slot;
       button.dataset.slotIndex = String(slotIndex);
       button.innerHTML = plan
-        ? `<span class="plan-meta">${category.icon} ${category.label}${plan.mood ? ` · ${escapeHtml(getMoodLabel(plan.mood))}` : ""}</span><span class="plan-title">${escapeHtml(plan.text)}</span>`
+        ? `<span class="plan-meta">${category.icon} ${category.label} · ${progress}%${plan.mood ? ` · ${escapeHtml(getMoodLabel(plan.mood))}` : ""}</span><span class="plan-title">${escapeHtml(plan.text)}</span>`
         : `<span class="plan-title">${t("addPlan")}</span>`;
       button.addEventListener("click", openPlanDialog);
       cell.appendChild(button);
       scheduleGrid.appendChild(cell);
     });
   });
+}
+
+function getMonthDateKeys(date) {
+  const first = new Date(date.getFullYear(), date.getMonth(), 1);
+  const keys = [];
+  for (let cursor = new Date(first); cursor.getMonth() === first.getMonth(); cursor = addDays(cursor, 1)) {
+    keys.push(toDateKey(cursor));
+  }
+  return keys;
+}
+
+function getEntriesForDateKeys(keys) {
+  const keySet = new Set(keys);
+  return getSortedEntries().filter((entry) => keySet.has(entry.dateKey));
+}
+
+function getCompletionStats(entries) {
+  const total = entries.length;
+  if (!total) {
+    return { total: 0, done: 0, percent: 0 };
+  }
+
+  const progressSum = entries.reduce((sum, entry) => sum + getPlanProgress(entry), 0);
+  return {
+    total,
+    done: entries.filter((entry) => getPlanProgress(entry) === 100).length,
+    percent: Math.round(progressSum / total),
+  };
+}
+
+function renderProgress() {
+  const todayEntries = getEntriesForDateKeys([toDateKey(selectedDate)]);
+  const weekEntries = getEntriesForDateKeys(getVisibleWeekKeys());
+  const monthEntries = getEntriesForDateKeys(getMonthDateKeys(selectedDate));
+  const statItems = [
+    { label: t("dayProgress"), stats: getCompletionStats(todayEntries) },
+    { label: t("weekProgress"), stats: getCompletionStats(weekEntries) },
+    { label: t("monthProgress"), stats: getCompletionStats(monthEntries) },
+  ];
+
+  progressStats.innerHTML = statItems
+    .map(
+      (item) => `
+        <article class="stat-card">
+          <strong>${escapeHtml(item.label)}</strong>
+          <div class="stat-value">${item.stats.percent}%</div>
+          <div class="stat-track"><div class="stat-bar" style="--progress-width:${item.stats.percent}%"></div></div>
+          <span class="stat-detail">${t("progressDetail", { done: item.stats.done, total: item.stats.total })}</span>
+        </article>
+      `,
+    )
+    .join("");
+
+  renderTaskModules();
+}
+
+function renderTaskModules() {
+  const visibleKeys = new Set(getVisibleDateKeys());
+  const entries = getSortedEntries().filter((entry) => visibleKeys.has(entry.dateKey));
+  taskModules.innerHTML = "";
+  moduleEmpty.hidden = entries.length > 0;
+
+  entries.forEach((entry) => {
+    const category = getCategory(entry.category);
+    const progress = getPlanProgress(entry);
+    const module = document.createElement("article");
+    module.className = "task-module";
+    module.style.setProperty("--category-color", category.color);
+    const subtaskDetail = entry.subtasks?.length
+      ? t("subtaskProgressDetail", {
+          done: entry.subtasks.filter((item) => item.done).length,
+          total: entry.subtasks.length,
+        })
+      : t("noSubtasks");
+    module.innerHTML = `
+      <div class="module-head">
+        <p class="module-title">${escapeHtml(entry.text)}</p>
+        <span class="module-percent">${progress}%</span>
+      </div>
+      <div class="module-meta">${escapeHtml(entry.dateKey)} · ${escapeHtml(getTimeRange(entry.slot, entry.span))} · ${category.icon} ${category.label}</div>
+      <div class="module-track"><div class="module-bar" style="--progress-width:${progress}%"></div></div>
+      <div class="module-meta">${escapeHtml(subtaskDetail)}</div>
+      <div class="subtask-list"></div>
+    `;
+
+    const list = module.querySelector(".subtask-list");
+    if (entry.subtasks?.length) {
+      entry.subtasks.forEach((subtask) => {
+        const label = document.createElement("label");
+        label.className = `subtask-item${subtask.done ? " is-done" : ""}`;
+        label.innerHTML = `<input type="checkbox" ${subtask.done ? "checked" : ""}> <span>${escapeHtml(subtask.text)}</span>`;
+        label.querySelector("input").addEventListener("change", (event) => {
+          updateSubtask(entry.key, subtask.id, event.target.checked);
+        });
+        list.appendChild(label);
+      });
+    } else {
+      const label = document.createElement("label");
+      label.className = `subtask-item${entry.done ? " is-done" : ""}`;
+      label.innerHTML = `<input type="checkbox" ${entry.done ? "checked" : ""}> <span>${t("markDone")}</span>`;
+      label.querySelector("input").addEventListener("change", (event) => {
+        updatePlanDone(entry.key, event.target.checked);
+      });
+      list.appendChild(label);
+    }
+
+    taskModules.appendChild(module);
+  });
+}
+
+function updateSubtask(key, subtaskId, checked) {
+  const plan = plans[key];
+  if (!plan) {
+    return;
+  }
+
+  const before = clonePlans();
+  const subtask = plan.subtasks.find((item) => item.id === subtaskId);
+  if (!subtask) {
+    return;
+  }
+
+  const wasDone = plan.done;
+  subtask.done = checked;
+  syncPlanDone(plan);
+  commitPlanChange(before);
+
+  if (!wasDone && plan.done) {
+    showCheer();
+    openMoodDialog(key);
+  }
+}
+
+function updatePlanDone(key, checked) {
+  const plan = plans[key];
+  if (!plan) {
+    return;
+  }
+
+  const before = clonePlans();
+  const wasDone = plan.done;
+  plan.done = checked;
+  commitPlanChange(before);
+
+  if (!wasDone && checked) {
+    showCheer();
+    openMoodDialog(key);
+  }
 }
 
 function createCell(text, className, column, row, rowSpan = 1) {
@@ -786,6 +1084,7 @@ function openPlanDialog(event) {
   dialogDate.textContent = `${button.dataset.date} ${button.dataset.weekday}`;
   dialogTime.textContent = getTimeRange(activeSlot, plan?.span || 1);
   planText.value = plan?.text || "";
+  subtaskText.value = getSubtaskText(plan);
   repeatUntil.min = activeDateKey;
   repeatUntil.value = plan?.dueDate && plan.dueDate >= activeDateKey ? plan.dueDate : activeDateKey;
   planCategory.value = plan?.category || "study";
@@ -826,15 +1125,17 @@ function renderSummary() {
 
   entries.forEach((entry) => {
     const category = getCategory(entry.category);
+    const progress = getPlanProgress(entry);
     const row = document.createElement("tr");
-    row.className = entry.done ? "done-row" : "";
+    row.className = progress === 100 ? "done-row" : "";
     row.innerHTML = `
-      <td><input type="checkbox" ${entry.done ? "checked" : ""} aria-label="${t("markDone")}"></td>
+      <td><input type="checkbox" ${progress === 100 ? "checked" : ""} aria-label="${t("markDone")}"></td>
       <td>${escapeHtml(entry.dateKey)}</td>
       <td>${escapeHtml(entry.weekday)}</td>
       <td>${escapeHtml(getTimeRange(entry.slot, entry.span))}</td>
       <td>
         <span class="pill" style="--category-color:${category.color}; border:1px solid ${category.color};">${category.icon} ${category.label}</span>
+        <span class="pill">${progress}%</span>
         ${entry.dueDate && entry.dueDate > entry.dateKey ? `<span class="pill">${t("continueUntil", { date: escapeHtml(entry.dueDate) })}</span>` : ""}
         ${entry.mood ? `<span class="pill">${escapeHtml(getMoodLabel(entry.mood))}</span>` : ""}
         <div>${escapeHtml(entry.text)}</div>
@@ -844,6 +1145,11 @@ function renderSummary() {
       const before = clonePlans();
       const wasDone = plans[entry.key].done;
       plans[entry.key].done = event.target.checked;
+      if (plans[entry.key].subtasks?.length) {
+        plans[entry.key].subtasks.forEach((subtask) => {
+          subtask.done = event.target.checked;
+        });
+      }
       commitPlanChange(before);
       if (!wasDone && event.target.checked) {
         showCheer();
@@ -893,7 +1199,7 @@ function openMoodDialog(key) {
   moodDialog.showModal();
 }
 
-function createPlanCopies(text, span, category, dueDate) {
+function createPlanCopies(text, span, category, dueDate, subtasks) {
   const startDate = fromDateKey(activeDateKey);
   const endDate = fromDateKey(dueDate);
   const copies = [];
@@ -906,7 +1212,7 @@ function createPlanCopies(text, span, category, dueDate) {
     plans[key] = {
       id: plans[key]?.id || `${dateKey}-${activeSlot}-${Date.now()}`,
       text,
-      done: plans[key]?.done || false,
+      done: subtasks.length ? subtasks.every((item) => item.done) : plans[key]?.done || false,
       span,
       category,
       dueDate,
@@ -914,6 +1220,10 @@ function createPlanCopies(text, span, category, dueDate) {
       mood: plans[key]?.mood || "",
       carriedCount: plans[key]?.carriedCount || 0,
       carriedFrom: plans[key]?.carriedFrom || "",
+      subtasks: subtasks.map((item, index) => ({
+        ...item,
+        id: `${dateKey}-${activeSlot}-${item.id || index}`,
+      })),
     };
     copies.push(key);
   }
@@ -923,7 +1233,7 @@ function createPlanCopies(text, span, category, dueDate) {
 
 function getCarryoverEntries() {
   const today = todayKey();
-  return getSortedEntries().filter((entry) => entry.dateKey < today && !entry.done);
+  return getSortedEntries().filter((entry) => entry.dateKey < today && getPlanProgress(entry) < 100);
 }
 
 function checkCarryovers() {
@@ -1079,8 +1389,8 @@ function renderWeeklySummary() {
     return;
   }
 
-  const completed = entries.filter((entry) => entry.done);
-  const carried = entries.filter((entry) => entry.carriedCount > 0 || (!entry.done && entry.dateKey < todayKey()));
+  const completed = entries.filter((entry) => getPlanProgress(entry) === 100);
+  const carried = entries.filter((entry) => entry.carriedCount > 0 || (getPlanProgress(entry) < 100 && entry.dateKey < todayKey()));
   const carriedRatio = carried.length / entries.length;
   const totalHours = entries.reduce((sum, entry) => sum + getDurationHours(entry.span), 0);
   const categoryHours = {};
@@ -1206,6 +1516,43 @@ feedbackChoiceDialog.addEventListener("close", () => {
   }
 });
 
+backgroundBtn.addEventListener("click", () => {
+  closeToolMenu();
+  renderBackgroundControls();
+  backgroundDialog.returnValue = "";
+  backgroundDialog.showModal();
+});
+
+backgroundImageInput.addEventListener("change", () => {
+  const file = backgroundImageInput.files?.[0];
+  if (!file) {
+    return;
+  }
+
+  if (file.size > 2 * 1024 * 1024) {
+    showCheer(t("imageTooLarge"));
+    backgroundImageInput.value = "";
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    backgroundSettings.image = String(reader.result || "");
+    saveBackgroundSettings();
+    applyBackgroundSettings();
+    showCheer(t("backgroundSaved"));
+  });
+  reader.readAsDataURL(file);
+});
+
+clearBackgroundImage.addEventListener("click", () => {
+  backgroundSettings.image = "";
+  backgroundImageInput.value = "";
+  saveBackgroundSettings();
+  applyBackgroundSettings();
+  showCheer(t("backgroundSaved"));
+});
+
 document.querySelector("#prevWeek").addEventListener("click", () => {
   selectedDate = addDays(selectedDate, viewMode === "day" ? -1 : -7);
   weekStart = getMonday(selectedDate);
@@ -1229,9 +1576,9 @@ document.querySelector("#clearDone").addEventListener("click", () => {
   const before = clonePlans();
   Object.keys(plans).forEach((key) => {
     const [dateKey] = key.split("|");
-    if (visibleKeys.has(dateKey) && plans[key].done) {
-      delete plans[key];
-    }
+      if (visibleKeys.has(dateKey) && getPlanProgress(plans[key]) === 100) {
+        delete plans[key];
+      }
   });
   if (commitPlanChange(before)) {
     showCheer(t("clearDoneDone"));
@@ -1256,14 +1603,15 @@ planDialog.addEventListener("close", () => {
   const span = Number(endTime.value) || 1;
   const category = planCategory.value || "study";
   const dueDate = repeatUntil.value || activeDateKey;
+  const subtasks = parseSubtasks(subtaskText.value, plans[activeKey]?.subtasks || []);
   const before = activePlansBefore || clonePlans();
 
   if (action === "save" && text) {
-    if (plans[activeKey]) {
-      delete plans[activeKey];
+      if (plans[activeKey]) {
+        delete plans[activeKey];
+      }
+      createPlanCopies(text, span, category, dueDate, subtasks);
     }
-    createPlanCopies(text, span, category, dueDate);
-  }
 
   if (action === "save" && !text) {
     delete plans[activeKey];

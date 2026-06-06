@@ -10,6 +10,8 @@
   --warm: #f4b942;
   --danger: #bf4b4b;
   --shadow: 0 18px 40px rgba(31, 43, 39, 0.08);
+  --user-bg: #f6f7f4;
+  --user-bg-image: none;
 }
 
 * {
@@ -19,9 +21,22 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--bg);
+  background-color: var(--user-bg);
+  background-image: var(--user-bg-image);
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
   color: var(--ink);
   font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", Arial, sans-serif;
+}
+
+body.has-photo-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: rgba(246, 247, 244, 0.72);
+  backdrop-filter: blur(1px);
 }
 
 button,
@@ -74,6 +89,7 @@ button:disabled {
 }
 
 .planner-band,
+.progress-band,
 .summary-band {
   background: var(--paper);
   border: 1px solid var(--line);
@@ -89,7 +105,13 @@ button:disabled {
   padding: 18px;
 }
 
+.progress-band {
+  margin-top: 16px;
+  padding: 18px;
+}
+
 .planner-head,
+.progress-head,
 .summary-head,
 .dialog-head {
   display: flex;
@@ -167,6 +189,124 @@ h3 {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
+}
+
+.progress-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.stat-card {
+  min-height: 96px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+}
+
+.stat-card strong {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.stat-value {
+  margin: 8px 0;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.stat-track,
+.module-track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--soft);
+}
+
+.stat-bar,
+.module-bar {
+  height: 100%;
+  width: var(--progress-width);
+  border-radius: inherit;
+  background: var(--accent);
+}
+
+.stat-detail {
+  display: block;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.task-module {
+  display: grid;
+  gap: 10px;
+  min-height: 160px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-left: 6px solid var(--category-color, var(--accent));
+  border-radius: 8px;
+  background: #fff;
+}
+
+.module-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.module-title {
+  margin: 0;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.module-percent {
+  flex: 0 0 auto;
+  color: var(--accent-dark);
+  font-weight: 900;
+}
+
+.module-meta {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.subtask-list {
+  display: grid;
+  gap: 6px;
+}
+
+.subtask-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.subtask-item input {
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  accent-color: var(--accent);
+}
+
+.subtask-item.is-done {
+  color: var(--muted);
+  text-decoration: line-through;
 }
 
 .view-switch {
@@ -570,6 +710,13 @@ h3 {
   resize: vertical;
 }
 
+.field-hint {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
 .plan-field select {
   width: 100%;
   min-height: 42px;
@@ -591,6 +738,26 @@ h3 {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.theme-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 10px;
+}
+
+.theme-swatch {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--swatch-color);
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.theme-swatch.is-active {
+  outline: 3px solid rgba(40, 124, 102, 0.28);
+  border-color: var(--accent);
 }
 
 .cheer-stack {
@@ -782,6 +949,7 @@ h3 {
   }
 
   .planner-band,
+  .progress-band,
   .summary-band {
     padding: 12px;
   }
@@ -837,6 +1005,14 @@ h3 {
 
   .summary-actions {
     width: 100%;
+  }
+
+  .progress-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .module-grid {
+    grid-template-columns: 1fr;
   }
 
   .summary-actions .clear-button {
