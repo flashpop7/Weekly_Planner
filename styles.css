@@ -41,18 +41,18 @@ button:disabled {
 }
 
 .app-shell {
-  width: min(1180px, calc(100% - 32px));
+  width: min(1040px, calc(100% - 28px));
   margin: 0 auto;
-  padding: 28px 0 42px;
+  padding: 18px 0 32px;
 }
 
 .daily-quote {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 58px;
-  margin-bottom: 14px;
-  padding: 14px 18px;
+  min-height: 48px;
+  margin-bottom: 12px;
+  padding: 11px 16px;
   border: 1px solid rgba(40, 124, 102, 0.2);
   background: #fffdf7;
   box-shadow: var(--shadow);
@@ -61,14 +61,14 @@ button:disabled {
 .daily-quote p {
   margin: 0;
   color: var(--ink);
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 700;
   line-height: 1.45;
 }
 
 .quote-mark {
   color: var(--warm);
-  font-size: 36px;
+  font-size: 30px;
   font-weight: 900;
   line-height: 1;
 }
@@ -81,12 +81,12 @@ button:disabled {
 }
 
 .planner-band {
-  padding: 24px;
+  padding: 18px;
 }
 
 .summary-band {
-  margin-top: 20px;
-  padding: 22px 24px 24px;
+  margin-top: 16px;
+  padding: 18px;
 }
 
 .planner-head,
@@ -115,11 +115,11 @@ h3 {
 }
 
 h1 {
-  font-size: clamp(28px, 4vw, 40px);
+  font-size: clamp(24px, 3vw, 32px);
 }
 
 h2 {
-  font-size: 24px;
+  font-size: 22px;
 }
 
 h3 {
@@ -129,6 +129,8 @@ h3 {
 .week-tools {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
 }
 
@@ -139,6 +141,32 @@ h3 {
   gap: 8px;
 }
 
+.view-switch {
+  display: inline-flex;
+  gap: 4px;
+  margin: 0 0 12px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--soft);
+}
+
+.view-button {
+  min-width: 72px;
+  min-height: 32px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.view-button.is-active {
+  background: var(--paper);
+  color: var(--accent-dark);
+  box-shadow: 0 4px 12px rgba(31, 43, 39, 0.08);
+}
+
 .icon-button,
 .today-button,
 .clear-button,
@@ -147,13 +175,13 @@ h3 {
   border: 1px solid var(--line);
   background: var(--paper);
   color: var(--ink);
-  min-height: 40px;
+  min-height: 36px;
   border-radius: 8px;
 }
 
 .icon-button {
-  width: 42px;
-  font-size: 26px;
+  width: 38px;
+  font-size: 23px;
   line-height: 1;
 }
 
@@ -162,6 +190,7 @@ h3 {
 .save-button,
 .delete-button {
   padding: 0 14px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -195,7 +224,7 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin: 18px 0;
+  margin: 14px 0;
   color: var(--muted);
 }
 
@@ -204,19 +233,26 @@ h3 {
 }
 
 .schedule-wrap {
-  overflow-x: auto;
+  max-height: min(72vh, 720px);
+  overflow: auto;
   border: 1px solid var(--line);
+  scrollbar-gutter: stable;
 }
 
 .schedule-grid {
   display: grid;
-  grid-template-columns: 96px repeat(7, minmax(128px, 1fr));
-  grid-auto-rows: minmax(76px, auto);
-  min-width: 980px;
+  grid-template-columns: 82px repeat(7, minmax(104px, 1fr));
+  grid-auto-rows: minmax(58px, auto);
+  min-width: 810px;
+}
+
+.schedule-grid.is-day-view {
+  grid-template-columns: 76px minmax(0, 1fr);
+  min-width: 0;
 }
 
 .grid-cell {
-  min-height: 76px;
+  min-height: 58px;
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   background: #fff;
@@ -234,40 +270,51 @@ h3 {
   display: grid;
   place-items: center;
   color: var(--muted);
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+
+.corner-cell {
+  top: 0;
+  z-index: 4;
 }
 
 .day-cell {
-  padding: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  padding: 9px 8px;
 }
 
 .day-cell .weekday {
   display: block;
   color: var(--ink);
-  font-size: 16px;
+  font-size: 15px;
 }
 
 .day-cell .date {
   display: block;
-  margin-top: 5px;
+  margin-top: 3px;
   color: var(--muted);
   font-size: 13px;
 }
 
 .plan-cell {
   position: relative;
-  padding: 8px;
+  padding: 5px;
 }
 
 .plan-button {
   width: 100%;
   height: 100%;
-  min-height: 60px;
+  min-height: 46px;
   border: 1px dashed transparent;
   border-radius: 6px;
   background: transparent;
   color: var(--muted);
   text-align: left;
-  padding: 9px;
+  padding: 7px;
   overflow: hidden;
 }
 
@@ -283,7 +330,7 @@ h3 {
   border-color: rgba(40, 124, 102, 0.28);
   background: #eaf6f1;
   color: var(--ink);
-  border-left: 6px solid var(--category-color, var(--accent));
+  border-left: 5px solid var(--category-color, var(--accent));
 }
 
 .plan-button.is-done {
@@ -294,7 +341,7 @@ h3 {
 
 .plan-title {
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   line-height: 1.35;
@@ -302,42 +349,65 @@ h3 {
 
 .plan-meta {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 3px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
 }
 
 .summary-table-wrap {
   position: relative;
-  overflow-x: auto;
-  margin-top: 16px;
+  max-height: min(42vh, 420px);
+  overflow: auto;
+  margin-top: 12px;
+  border: 1px solid var(--line);
 }
 
 .summary-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 720px;
+  min-width: 0;
+  table-layout: fixed;
 }
 
 .summary-table th,
 .summary-table td {
   border-bottom: 1px solid var(--line);
-  padding: 12px 10px;
+  padding: 8px 7px;
   text-align: left;
   vertical-align: top;
+  font-size: 13px;
 }
 
 .summary-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--paper);
   color: var(--muted);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
 }
 
 .summary-table td:first-child,
 .summary-table th:first-child {
-  width: 66px;
+  width: 48px;
   text-align: center;
+}
+
+.summary-table td:nth-child(2),
+.summary-table th:nth-child(2) {
+  width: 94px;
+}
+
+.summary-table td:nth-child(3),
+.summary-table th:nth-child(3) {
+  width: 54px;
+}
+
+.summary-table td:nth-child(4),
+.summary-table th:nth-child(4) {
+  width: 98px;
 }
 
 .summary-table input[type="checkbox"] {
@@ -610,36 +680,28 @@ h3 {
 
 @media (max-width: 720px) {
   .app-shell {
-    width: min(100% - 18px, 1180px);
-    padding-top: 12px;
+    width: min(100% - 12px, 1040px);
+    padding-top: 8px;
   }
 
   .planner-band,
   .summary-band {
-    padding: 16px;
+    padding: 12px;
   }
 
   .daily-quote {
     align-items: flex-start;
-    padding: 13px 14px;
+    padding: 10px 12px;
   }
 
   .daily-quote p {
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .planner-head,
   .summary-head {
     align-items: flex-start;
     flex-direction: column;
-  }
-
-  .summary-actions {
-    width: 100%;
-  }
-
-  .summary-actions .clear-button {
-    flex: 1 1 136px;
   }
 
   .week-tools {
@@ -655,6 +717,110 @@ h3 {
   .today-button {
     grid-column: 2;
     min-width: 0;
+  }
+
+  .summary-actions {
+    width: 100%;
+  }
+
+  .summary-actions .clear-button {
+    flex: 1 1 130px;
+  }
+
+  .view-switch {
+    display: flex;
+    width: 100%;
+  }
+
+  .view-button {
+    flex: 1;
+  }
+
+  .schedule-wrap {
+    max-height: 58vh;
+    margin-inline: -6px;
+    border-left: 0;
+    border-right: 0;
+  }
+
+  .schedule-grid {
+    grid-template-columns: 62px repeat(7, minmax(76px, 1fr));
+    grid-auto-rows: minmax(48px, auto);
+    min-width: 594px;
+  }
+
+  .schedule-grid.is-day-view {
+    grid-template-columns: 58px minmax(0, 1fr);
+    min-width: 0;
+  }
+
+  .grid-cell {
+    min-height: 48px;
+  }
+
+  .corner-cell,
+  .time-cell {
+    box-shadow: 1px 0 0 var(--line);
+    font-size: 12px;
+  }
+
+  .day-cell {
+    padding: 7px 5px;
+    text-align: center;
+  }
+
+  .day-cell .weekday {
+    font-size: 13px;
+  }
+
+  .day-cell .date {
+    font-size: 10px;
+  }
+
+  .plan-cell {
+    padding: 4px;
+  }
+
+  .plan-button {
+    min-height: 38px;
+    padding: 5px;
+    font-size: 12px;
+  }
+
+  .plan-meta {
+    font-size: 10px;
+  }
+
+  .summary-table {
+    min-width: 0;
+  }
+
+  .summary-table th,
+  .summary-table td {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+
+  .summary-table-wrap {
+    max-height: 34vh;
+    margin-inline: -6px;
+    border-left: 0;
+    border-right: 0;
+  }
+
+  .summary-table td:nth-child(2),
+  .summary-table th:nth-child(2) {
+    width: 82px;
+  }
+
+  .summary-table td:nth-child(3),
+  .summary-table th:nth-child(3) {
+    width: 44px;
+  }
+
+  .summary-table td:nth-child(4),
+  .summary-table th:nth-child(4) {
+    width: 78px;
   }
 
   .reschedule-row {
