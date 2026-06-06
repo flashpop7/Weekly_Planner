@@ -1,142 +1,60 @@
-# planning
+# Weekly_Planner
 
-`planning` is a clean timetable-style web planning app for organizing tasks by date, weekday, and time block. It supports multi-hour blocks, repeated tasks, task categories, completion tracking, mood logging, daily encouragement, carryover reminders, and weekly summaries.
+A simple local-first weekly planning web app.
 
-This project was created through a vibe coding workflow, with features shaped iteratively through natural-language direction and rapid frontend implementation.
+Weekly_Planner helps you arrange tasks by date and time block, switch between day and week views, track completion, undo mistakes, and review plans in a compact summary table.
 
 ## Features
 
-- Timetable-style weekly view with full dates and weekdays
-- Time slots from `07:00` to `24:00`
-- Add tasks by selecting a time block
-- Merge continuous time blocks, such as `08:00-12:00`
-- Repeat a task across multiple days until a selected end date
-- Task categories with distinct colors and icons:
-  - Study
-  - Work
-  - Health
-  - Life
-  - Creative
-  - Social
-  - Rest
-- Automatically generated task summary table
-- Mark tasks as completed
-- Select a mood after completing a task
-- Daily positive encouragement quote
-- Cheer message popup after completing a task
-- Carryover reminder for unfinished tasks from previous days
-- Option to move unfinished tasks into the current day or delete them
-- Sunday weekly summary with time statistics and mood records
-- Update dialog for refreshing the deployed web version
+- Day view and week view
+- Time blocks from `07:00` to `24:00`
+- Add, edit, delete, undo, and redo plans
+- Multi-hour tasks and repeated tasks
+- Task categories and mood records
+- Current-view summary table
+- Clear completed tasks or clear the current week
+- Chinese / English interface
+- Feedback entry for suggestions and bug reports
+- Local browser storage with no account required
 
-## Getting Started
+## Use
 
-Use the deployed web version:
+Open `index.html` directly, or deploy the files to GitHub Pages.
+
+Main files:
 
 ```text
-https://flashpop7.github.io/planning/
+index.html
+styles.css
+app.js
+version.json
 ```
 
-## Web Deployment
+## Feedback
 
-This project is deployed with GitHub Pages:
+The feedback button currently opens this WPS form:
 
 ```text
-https://flashpop7.github.io/planning/
+https://f.wps.cn/g/P1wfV2Yd/
 ```
 
-After updating the source files and deploying them to the same GitHub Pages URL, users can refresh the page or use the app's **Web Update** button to load the latest web version.
+Responses are managed in the WPS/Kingsoft form backend, so the creator can review suggestions and bug reports without publishing a personal email address.
 
-Current public web version:
+Overseas users can submit feedback only if they can access the WPS form link normally. If you expect many international users, keep a backup form option ready.
 
-```text
-https://flashpop7.github.io/planning/
-```
+To change feedback collection, edit these values in `app.js`:
 
-## Project Structure
+- `feedbackFormUrl`: opens an external form
+- `feedbackSubmitUrl`: submits the built-in feedback dialog to an API endpoint
 
-```text
-.
-├── index.html
-├── styles.css
-├── app.js
-├── version.json
-├── LICENSE
-└── README.md
-```
+Do not put private keys, tokens, or passwords in frontend code.
 
 ## Privacy
 
-This app stores task data locally in the browser using `localStorage`.
+Plans are saved in the browser with `localStorage`.
 
-- Task data is not uploaded to a server.
-- Each browser/device has its own local task data.
-- Opening the same webpage on another device does not reveal another user's plans.
-- A public GitHub repository contains the source code only, not locally entered task data.
-- Clearing browser cache/site data may delete saved plans.
-- The source code does not include personal account information, API keys, or a fixed APK download URL.
-
-If cloud sync, accounts, or a database are added later, authentication, permissions, and data protection should be implemented separately.
-
-## Disclaimer
-
-This project is a local-first planning tool. Saved plans depend on browser local storage, so data may be lost if browser storage is cleared, the app is opened in a different browser, or the device storage is reset. Export or backup functionality should be added before using the app for critical schedules.
-
-## Update Flow
-
-The current project is a web app. It does not include an APK release yet.
-
-The update dialog includes:
-
-- **Web Update**: reloads the current webpage to fetch the latest deployed web version.
-- **Download New Version**: reserved for a future APK release. It reads `version.json`, but `apkUrl` is currently empty.
-
-For the web version, the same URL can be reused. After deploying updated files to that URL, reloading the page will show the latest version.
-
-The `version.json` file currently tracks the web version and keeps a placeholder for a future APK download URL:
-
-```json
-{
-  "version": "1.4.0",
-  "apkUrl": "",
-  "notes": "Initial web version. APK download URL is not configured yet."
-}
-```
-
-When an APK is created in the future, a new APK file can be uploaded to a release or another stable hosting location. At that point, replace the empty `apkUrl` value with the APK download URL.
-
-## Feedback Collection
-
-The app includes a feedback entry for feature suggestions and bug reports.
-
-Because this is a static GitHub Pages app, private feedback collection needs an external form or submission endpoint. Configure one of these values in `app.js`:
-
-- `feedbackFormUrl`: opens a private form service page, such as a questionnaire or form whose responses only the creator can view.
-- `feedbackSubmitUrl`: submits the built-in feedback dialog to a form/backend endpoint that accepts JSON.
-
-Do not put private API keys or creator-only tokens in the frontend code.
-
-## Language Switch
-
-The app supports Chinese and English UI text. The selected language is saved in browser `localStorage`, so returning users keep their preferred language on the same device/browser.
-
-## Current Status
-
-- Web version: available through GitHub Pages
-- APK version: not available yet
-- Cloud sync: not available
-- User accounts: not available
-- Data storage: browser local storage only
-
-## Possible Future Improvements
-
-- Add PWA support for installation from mobile browsers
-- Package the app as an Android APK with Capacitor
-- Add task import/export
-- Add notification reminders
-- Add optional cloud sync
-- Add user accounts and access control
+Data is not uploaded to a server by default. Clearing browser data may remove saved plans.
 
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+MIT License. See [LICENSE](LICENSE).
