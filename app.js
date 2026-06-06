@@ -7,6 +7,7 @@ const slots = Array.from({ length: 17 }, (_, index) => {
 
 const storageKey = "simple-week-planner";
 const historyStorageKey = "simple-week-planner-history";
+const viewModeStorageKey = "simple-week-planner-view-mode";
 const appVersion = "1.4.0";
 const webAppUrl = "https://flashpop7.github.io/planning/";
 const versionInfoUrl = "version.json";
@@ -94,9 +95,13 @@ const redoBtn = document.querySelector("#redoBtn");
 const clearWeekBtn = document.querySelector("#clearWeek");
 const clearWeekDialog = document.querySelector("#clearWeekDialog");
 const clearWeekMessage = document.querySelector("#clearWeekMessage");
+const dayViewBtn = document.querySelector("#dayViewBtn");
+const weekViewBtn = document.querySelector("#weekViewBtn");
 
 let plans = normalizePlans(JSON.parse(localStorage.getItem(storageKey) || "{}"));
-let weekStart = getMonday(new Date());
+let selectedDate = new Date();
+let weekStart = getMonday(selectedDate);
+let viewMode = localStorage.getItem(viewModeStorageKey) === "week" ? "week" : "day";
 let activeKey = "";
 let activeDateKey = "";
 let activeSlot = "";
@@ -148,13 +153,25 @@ function getWeekDates() {
   return Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
 }
 
+function getVisibleDates() {
+  return viewMode === "day" ? [selectedDate] : getWeekDates();
+}
+
 function getVisibleWeekKeys() {
   return getWeekDates().map(toDateKey);
+}
+
+function getVisibleDateKeys() {
+  return getVisibleDates().map(toDateKey);
 }
 
 function getVisibleWeekLabel() {
   const dates = getWeekDates();
   return `${formatDate(dates[0])} - ${formatDate(dates[6])}`;
+}
+
+function getWeekday(date) {
+  return weekdays[(date.getDay() + 6) % 7];
 }
 
 function getCategory(value) {
@@ -352,6 +369,7 @@ function removePlansInRange(dateKey, startIndex, span, keepKey = "") {
 function render() {
   renderDailyQuote();
   renderHeader();
+  renderViewMode();
   renderGrid();
   renderSummary();
 }
@@ -363,14 +381,26 @@ function renderDailyQuote() {
 }
 
 function renderHeader() {
-  const dates = getWeekDates();
+  const dates = getVisibleDates();
   const first = dates[0];
-  const last = dates[6];
-  monthLabel.textContent = `${first.getFullYear()}年${first.getMonth() + 1}月`;
-  weekRange.textContent = `${formatDate(first)} - ${formatDate(last)}`;
-  todayBtn.textContent = getRelativeWeekLabel();
-  todayBtn.title = "回到这周";
-  todayBtn.setAttribute("aria-label", `当前显示${todayBtn.textContent}，点击回到这周`);
+  const last = dates[dates.length - 1];
+  monthLabel.textContent = viewMode === "day" ? formatDate(first) : `${first.getFullYear()}年${first.getMonth() + 1}月`;
+  weekRange.textContent = viewMode === "day" ? `${getWeekday(first)} · 一天视图` : `${formatDate(first)} - ${formatDate(last)}`;
+  todayBtn.textContent = viewMode === "day" ? "今天" : getRelativeWeekLabel();
+  todayBtn.title = viewMode === "day" ? "回到今天" : "回到这周";
+  todayBtn.setAttribute("aria-label", viewMode === "day" ? "点击回到今天" : `当前显示${todayBtn.textContent}，点击回到这周`);
+  document.querySelector("#prevWeek").title = viewMode === "day" ? "前一天" : "上一周";
+  document.querySelector("#prevWeek").setAttribute("aria-label", viewMode === "day" ? "前一天" : "上一周");
+  document.querySelector("#nextWeek").title = viewMode === "day" ? "后一天" : "下一周";
+  document.querySelector("#nextWeek").setAttribute("aria-label", viewMode === "day" ? "后一天" : "下一周");
+}
+
+function renderViewMode() {
+  dayViewBtn.classList.toggle("is-active", viewMode === "day");
+  weekViewBtn.classList.toggle("is-active", viewMode === "week");
+  dayViewBtn.setAttribute("aria-pressed", String(viewMode === "day"));
+  weekViewBtn.setAttribute("aria-pressed", String(viewMode === "week"));
+  scheduleGrid.classList.toggle("is-day-view", viewMode === "day");
 }
 
 function getRelativeWeekLabel() {
@@ -390,13 +420,13 @@ function getRelativeWeekLabel() {
 }
 
 function renderGrid() {
-  const dates = getWeekDates();
+  const dates = getVisibleDates();
   scheduleGrid.innerHTML = "";
   scheduleGrid.appendChild(createCell("时间", "corner-cell", 1, 1));
 
   dates.forEach((date, index) => {
     const cell = createCell("", "day-cell", index + 2, 1);
-    cell.innerHTML = `<span class="weekday">${weekdays[index]}</span><span class="date">${formatDate(date)}</span>`;
+    cell.innerHTML = `<span class="weekday">${getWeekday(date)}</span><span class="date">${formatDate(date)}</span>`;
     scheduleGrid.appendChild(cell);
   });
 
@@ -424,7 +454,7 @@ function renderGrid() {
       button.style.setProperty("--category-color", category.color);
       button.dataset.key = key;
       button.dataset.date = dateKey;
-      button.dataset.weekday = weekdays[dayIndex];
+      button.dataset.weekday = getWeekday(date);
       button.dataset.slot = slot;
       button.dataset.slotIndex = String(slotIndex);
       button.innerHTML = plan
@@ -493,9 +523,14 @@ function renderCategoryOptions() {
 }
 
 function renderSummary() {
-  const entries = getSortedEntries();
+  const visibleKeys = new Set(getVisibleDateKeys());
+  const entries = getSortedEntries().filter((entry) => visibleKeys.has(entry.dateKey));
   summaryBody.innerHTML = "";
   emptyState.hidden = entries.length > 0;
+  emptyState.textContent =
+    viewMode === "day"
+      ? "点击上方时间段，输入今天的计划后，这里会显示当天总结。"
+      : "点击上方时间段，输入本周计划后，这里会显示当前周总结。";
 
   entries.forEach((entry) => {
     const category = getCategory(entry.category);
@@ -823,30 +858,45 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function setViewMode(nextMode) {
+  viewMode = nextMode;
+  localStorage.setItem(viewModeStorageKey, viewMode);
+  weekStart = getMonday(selectedDate);
+  render();
+}
+
+dayViewBtn.addEventListener("click", () => setViewMode("day"));
+weekViewBtn.addEventListener("click", () => setViewMode("week"));
+
 document.querySelector("#prevWeek").addEventListener("click", () => {
-  weekStart = addDays(weekStart, -7);
+  selectedDate = addDays(selectedDate, viewMode === "day" ? -1 : -7);
+  weekStart = getMonday(selectedDate);
   render();
 });
 
 document.querySelector("#nextWeek").addEventListener("click", () => {
-  weekStart = addDays(weekStart, 7);
+  selectedDate = addDays(selectedDate, viewMode === "day" ? 1 : 7);
+  weekStart = getMonday(selectedDate);
   render();
 });
 
 todayBtn.addEventListener("click", () => {
-  weekStart = getMonday(new Date());
+  selectedDate = new Date();
+  weekStart = getMonday(selectedDate);
   render();
 });
 
 document.querySelector("#clearDone").addEventListener("click", () => {
+  const visibleKeys = new Set(getVisibleDateKeys());
   const before = clonePlans();
   Object.keys(plans).forEach((key) => {
-    if (plans[key].done) {
+    const [dateKey] = key.split("|");
+    if (visibleKeys.has(dateKey) && plans[key].done) {
       delete plans[key];
     }
   });
   if (commitPlanChange(before)) {
-    showCheer("已清除完成项，可以用撤销找回来。");
+    showCheer("已清除当前视图里的完成项，可以用撤销找回来。");
   }
 });
 
